@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { api } from '../services/api';
 import { SEED_PROJECTS } from '../data/seedData';
+import ResearchDetailView from './ResearchDetailView';
 
 const FILTERS = ['All', 'Machine Learning', 'NLP', 'Climate', 'Bioinformatics'];
 
@@ -9,19 +10,39 @@ export default function ResearchDiscovery({ onSelectProject, onOpenWhyMatch }) {
   const [projects, setProjects] = useState(SEED_PROJECTS);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
+  const [selectedProblemId, setSelectedProblemId] = useState(null);
 
   useEffect(() => {
-    api.getProjects().then(data => { if (data?.length) setProjects(data); });
+    api.getProblems().then(data => {
+      if (data && Array.isArray(data) && data.length > 0) {
+        setProjects(data);
+      }
+    });
   }, []);
 
   const filtered = projects.filter(p => {
     const matchSearch = !search ||
       p.title?.toLowerCase().includes(search.toLowerCase()) ||
       p.sponsor?.toLowerCase().includes(search.toLowerCase()) ||
-      p.sponsor_name?.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === 'All' || p.tags?.includes(filter) || p.domain === filter;
+      p.sponsor_name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.description?.toLowerCase().includes(search.toLowerCase());
+    const matchFilter = filter === 'All' || p.tags?.includes(filter) || p.domain === filter || p.skillsRequired?.includes(filter);
     return matchSearch && matchFilter;
   });
+
+  if (selectedProblemId) {
+    return (
+      <ResearchDetailView
+        problemId={selectedProblemId}
+        onBack={() => setSelectedProblemId(null)}
+        onOpenProject={projectObj => {
+          setSelectedProblemId(null);
+          onSelectProject(projectObj);
+        }}
+        onOpenWhyMatch={onOpenWhyMatch}
+      />
+    );
+  }
 
   return (
     <div>
@@ -71,7 +92,7 @@ export default function ResearchDiscovery({ onSelectProject, onOpenWhyMatch }) {
             <ResearchItem
               key={p.id || i}
               project={p}
-              onSelect={() => onSelectProject(p)}
+              onSelect={() => setSelectedProblemId(p.id)}
               onWhyMatch={() => onOpenWhyMatch(p)}
             />
           ))
@@ -84,35 +105,44 @@ export default function ResearchDiscovery({ onSelectProject, onOpenWhyMatch }) {
 function ResearchItem({ project, onSelect, onWhyMatch }) {
   const sponsor = project.sponsor_name || project.sponsor || 'Sponsor';
   const match = project.matchScore || project.match_score || 92;
-  const tags = project.tags || ['Machine Learning', 'Python'];
-  const duration = project.duration_weeks ? `${project.duration_weeks} weeks` : '6 weeks';
-  const budget = project.budget || '₹1,00,000';
+  const tags = project.skillsRequired || project.tags || ['Machine Learning', 'Python'];
+  const duration = project.duration || (project.duration_weeks ? `${project.duration_weeks} weeks` : '6 weeks');
+  const budget = project.funding || project.budget || '₹1,00,000';
 
   return (
-    <div className="research-card">
+    <div className="research-card" onClick={onSelect}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{sponsor}</span>
-            {match >= 85 && (
+            {match >= 70 && (
               <span className="badge badge-indigo" style={{ fontSize: 11 }}>
                 {match}% match
               </span>
             )}
+            {project.status && (
+              <span className={`badge ${project.status === 'Recruiting' ? 'badge-green' : 'badge-gray'}`} style={{ fontSize: 11 }}>
+                {project.status}
+              </span>
+            )}
           </div>
 
-          <h3 style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10, lineHeight: 1.4 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8, lineHeight: 1.4 }}>
             {project.title}
           </h3>
 
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {project.description}
+          </p>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {tags.slice(0, 3).map(tag => (
+            {tags.slice(0, 4).map(tag => (
               <span key={tag} className="badge badge-gray">{tag}</span>
             ))}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{budget}</p>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{duration}</p>
@@ -125,7 +155,7 @@ function ResearchItem({ project, onSelect, onWhyMatch }) {
               Why match?
             </button>
             <button className="btn btn-primary btn-sm" onClick={onSelect}>
-              View →
+              View Research →
             </button>
           </div>
         </div>

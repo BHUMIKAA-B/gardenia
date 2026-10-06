@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "http://127.0.0.1:8001/api";
 
 const getHeaders = () => {
   const token = localStorage.getItem("pw_token");
@@ -49,6 +49,27 @@ export const api = {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify(problemData)
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  getProblemDetail: async (problemId) => {
+    try {
+      const res = await fetch(`${API_BASE}/research/problems/${problemId}`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  applyToResearch: async (problemId, roleRequested = "Student Researcher", message = "") => {
+    try {
+      const res = await fetch(`${API_BASE}/research/problems/${problemId}/apply`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ role_requested: roleRequested, message: message })
       });
       return await res.json();
     } catch (e) {

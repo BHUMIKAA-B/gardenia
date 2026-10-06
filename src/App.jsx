@@ -35,8 +35,13 @@ const PROJECT_TABS = [
   { id: 'contributions',  label: 'Contributions'  },
 ];
 
-function WorkspacePage({ onOpenProofModal }) {
+function WorkspacePage({ project, onOpenProofModal }) {
   const [tab, setTab] = useState('overview');
+  const projectTitle = project?.title || "AI-Assisted Urban Water Quality Prediction";
+  const projectId = project?.id || "PW-1042";
+  const sponsor = project?.sponsor_name || project?.sponsor || "AquaNova Research Labs";
+  const funding = project?.funding || "₹1,00,000";
+  const duration = project?.duration || "6 weeks";
 
   return (
     <div>
@@ -49,10 +54,10 @@ function WorkspacePage({ onOpenProofModal }) {
                 <span className="status-dot status-dot-green" />
                 Active
               </span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>PW-1042</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{projectId}</span>
             </div>
-            <h1 className="page-title">AI-Assisted Urban Water Quality Prediction</h1>
-            <p className="page-subtitle">AquaNova Research Labs · 6 weeks · ₹1,00,000</p>
+            <h1 className="page-title">{projectTitle}</h1>
+            <p className="page-subtitle">{sponsor} · {duration} · {funding}</p>
           </div>
           <span className="badge badge-indigo">🔒 Charter Locked</span>
         </div>
@@ -281,6 +286,7 @@ function ToastRenderer() {
 function MainAppContent() {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
+  const [selectedProject, setSelectedProject] = useState(null);
   const [isPitchOpen, setIsPitchOpen] = useState(false);
   const [whyProject, setWhyProject] = useState(null);
   const [proofNode, setProofNode] = useState(null);
@@ -293,11 +299,16 @@ function MainAppContent() {
     window.scrollTo({ top: 0 });
   };
 
+  const handleSelectProject = (proj) => {
+    if (proj) setSelectedProject(proj);
+    handleTab('workspace');
+  };
+
   const renderPage = () => {
     switch (activeTab) {
       case 'home':          return <HomePage onNavigate={handleTab} />;
-      case 'discover':      return <ResearchDiscovery onSelectProject={() => handleTab('workspace')} onOpenWhyMatch={p => setWhyProject(p)} />;
-      case 'workspace':     return <WorkspacePage onOpenProofModal={n => setProofNode(n)} />;
+      case 'discover':      return <ResearchDiscovery onSelectProject={handleSelectProject} onOpenWhyMatch={p => setWhyProject(p)} />;
+      case 'workspace':     return <WorkspacePage project={selectedProject} onOpenProofModal={n => setProofNode(n)} />;
       case 'messages':      return <MessagesView />;
       case 'updates':        return <WorkUpdatesView onRequestReplacement={() => handleTab('replacement')} />;
       case 'notifications':  return <NotificationCenter onNavigateTab={handleTab} />;

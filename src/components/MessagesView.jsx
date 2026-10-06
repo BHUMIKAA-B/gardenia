@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Send, Paperclip, Lock, CheckCheck, FileText } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const INITIAL_CONVERSATIONS = [
   {
@@ -59,6 +60,7 @@ const INITIAL_MESSAGES = [
 
 export default function MessagesView() {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [conversations, setConversations] = useState(INITIAL_CONVERSATIONS);
   const [selectedConvId, setSelectedConvId] = useState("CONV-101");
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
@@ -68,14 +70,14 @@ export default function MessagesView() {
 
   useEffect(() => {
     api.getConversations().then(data => {
-      if (data && data.length > 0) setConversations(data);
+      if (data && Array.isArray(data) && data.length > 0) setConversations(data);
     });
   }, []);
 
   useEffect(() => {
     if (!selectedConvId) return;
     api.getConversationMessages(selectedConvId).then(data => {
-      if (data && data.length > 0) setMessages(data);
+      if (data && Array.isArray(data) && data.length > 0) setMessages(data);
     });
   }, [selectedConvId]);
 
@@ -108,8 +110,8 @@ export default function MessagesView() {
   };
 
   const filteredConversations = conversations.filter(c => 
-    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.project_title.toLowerCase().includes(searchTerm.toLowerCase())
+    c.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.project_title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -117,50 +119,52 @@ export default function MessagesView() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <Lock className="w-4 h-4 text-zinc-400" />
+          <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Lock className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
             Private Research Messages
           </h3>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Role & project-scoped confidential team communications
           </p>
         </div>
       </div>
 
       {/* Main chat layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 min-h-[520px] rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[520px] rounded-xl border overflow-hidden panel">
         {/* Left: Conversation List */}
-        <div className="border-r border-zinc-800 flex flex-col">
-          <div className="p-3 border-b border-zinc-800">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="border-r flex flex-col" style={{ borderColor: 'var(--bg-border)' }}>
+          <div className="p-3 border-b" style={{ borderColor: 'var(--bg-border)' }}>
+            <div className="search-wrap">
+              <Search />
               <input
                 type="text"
                 placeholder="Search conversations…"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-zinc-700"
+                className="input"
               />
             </div>
           </div>
 
-          <div className="divide-y divide-zinc-800/60 overflow-y-auto flex-1">
+          <div className="divide-y overflow-y-auto flex-1" style={{ borderColor: 'var(--bg-border)' }}>
             {filteredConversations.map(conv => {
               const isSelected = conv.id === selectedConvId;
               return (
                 <button
                   key={conv.id}
                   onClick={() => setSelectedConvId(conv.id)}
-                  className={`w-full text-left p-3 transition-all ${
-                    isSelected ? 'bg-zinc-800/80 border-l-2 border-indigo-500' : 'hover:bg-zinc-800/40'
-                  }`}
+                  className="w-full text-left p-3 transition-all"
+                  style={{
+                    background: isSelected ? 'var(--accent-subtle)' : 'transparent',
+                    borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent'
+                  }}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="text-[10px] font-mono text-zinc-400 truncate">{conv.project_id}</span>
-                    <span className="text-[10px] font-mono text-zinc-500">{conv.last_message_time}</span>
+                    <span className="text-[10px] font-mono truncate" style={{ color: 'var(--text-muted)' }}>{conv.project_id}</span>
+                    <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>{conv.last_message_time}</span>
                   </div>
-                  <div className="text-xs font-semibold text-zinc-200 truncate">{conv.title}</div>
-                  <div className="text-[11px] text-zinc-400 truncate mt-1">{conv.last_message}</div>
+                  <div className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{conv.title}</div>
+                  <div className="text-[11px] truncate mt-1" style={{ color: 'var(--text-secondary)' }}>{conv.last_message}</div>
                 </button>
               );
             })}
@@ -168,14 +172,14 @@ export default function MessagesView() {
         </div>
 
         {/* Right: Active Chat View */}
-        <div className="md:col-span-2 flex flex-col justify-between bg-zinc-950">
+        <div className="md:col-span-2 flex flex-col justify-between" style={{ background: 'var(--bg-elevated)' }}>
           {/* Chat Header */}
-          <div className="p-3 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between">
+          <div className="p-3 border-b flex items-center justify-between" style={{ background: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}>
             <div>
-              <div className="text-xs font-semibold text-zinc-100">{activeConv.title}</div>
-              <div className="text-[10px] text-zinc-400 font-mono">{activeConv.project_title}</div>
+              <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{activeConv.title}</div>
+              <div className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>{activeConv.project_title}</div>
             </div>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="badge badge-green">
               Encrypted & Scoped
             </span>
           </div>
@@ -186,8 +190,8 @@ export default function MessagesView() {
               const isSelf = m.sender_id === (user?.id || 2) || m.sender_name === "Bhumikaa B";
               return (
                 <div key={m.id} className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'}`}>
-                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 mb-1 font-mono">
-                    <span className="font-semibold text-zinc-300">{m.sender_name}</span>
+                  <div className="flex items-center gap-1.5 text-[10px] mb-1 font-mono" style={{ color: 'var(--text-muted)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{m.sender_name}</span>
                     <span>({m.sender_role})</span>
                     <span>·</span>
                     <span>{m.timestamp}</span>
@@ -195,12 +199,14 @@ export default function MessagesView() {
 
                   <div className={`p-3 rounded-xl max-w-md text-xs leading-relaxed ${
                     isSelf
-                      ? 'bg-indigo-600 text-white rounded-br-none'
-                      : 'bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-bl-none'
-                  }`}>
+                      ? 'bg-indigo-600 text-white rounded-br-none shadow-sm'
+                      : 'panel rounded-bl-none text-secondary'
+                  }`}
+                  style={!isSelf ? { background: 'var(--bg-surface)', color: 'var(--text-primary)' } : {}}
+                  >
                     <p>{m.text}</p>
                     {m.attachment_ref && (
-                      <div className="mt-2 pt-2 border-t border-white/20 flex items-center gap-1.5 font-mono text-[11px]">
+                      <div className="mt-2 pt-2 border-t border-indigo-400/30 flex items-center gap-1.5 font-mono text-[11px]">
                         <FileText className="w-3 h-3 shrink-0" />
                         <span className="underline">{m.attachment_ref}</span>
                       </div>
@@ -212,11 +218,11 @@ export default function MessagesView() {
           </div>
 
           {/* Message input */}
-          <form onSubmit={handleSendMessage} className="p-3 border-t border-zinc-800 bg-zinc-900 space-y-2">
+          <form onSubmit={handleSendMessage} className="p-3 border-t space-y-2" style={{ background: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}>
             {attachment && (
-              <div className="flex items-center justify-between text-[10px] font-mono px-2 py-1 bg-zinc-950 rounded border border-zinc-800 text-indigo-400">
+              <div className="flex items-center justify-between text-[10px] font-mono px-2 py-1 rounded border text-indigo-500" style={{ background: 'var(--accent-subtle)', borderColor: 'var(--accent-border)' }}>
                 <span>Attachment: {attachment}</span>
-                <button type="button" onClick={() => setAttachment('')} className="text-zinc-500 hover:text-zinc-300">×</button>
+                <button type="button" onClick={() => setAttachment('')} style={{ color: 'var(--text-muted)' }}>×</button>
               </div>
             )}
             <div className="flex items-center gap-2">
@@ -224,7 +230,7 @@ export default function MessagesView() {
                 type="button"
                 onClick={() => setAttachment('Dataset Validation Report #EV-1024')}
                 title="Attach Evidence Artifact"
-                className="p-2 rounded-lg border border-zinc-800 text-zinc-400 hover:text-zinc-200 bg-zinc-950"
+                className="btn btn-secondary btn-sm"
               >
                 <Paperclip className="w-4 h-4" />
               </button>
@@ -233,11 +239,11 @@ export default function MessagesView() {
                 value={newMessageText}
                 onChange={e => setNewMessageText(e.target.value)}
                 placeholder="Type confidential research message…"
-                className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-zinc-700"
+                className="input"
               />
               <button
                 type="submit"
-                className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
+                className="btn btn-primary"
               >
                 <Send className="w-3.5 h-3.5" /> Send
               </button>

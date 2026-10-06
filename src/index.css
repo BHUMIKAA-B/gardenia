@@ -5,71 +5,85 @@
    DESIGN TOKENS — DARK & LIGHT THEMES
    ============================================================ */
 :root, [data-theme="dark"] {
-  /* Background layers */
-  --bg-base:     #09090b;
-  --bg-surface:  #121215;
-  --bg-elevated: #18181b;
-  --bg-subtle:   #202024;
-  --bg-border:   #27272a;
-  --bg-border-subtle: #27272a;
+  /* Background layers — deep charcoal navy glassmorphic gradient */
+  --bg-base:     #0b0f19;
+  --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0f172a 100%);
+  --bg-surface:  rgba(15, 23, 42, 0.70);
+  --bg-elevated: rgba(30, 41, 59, 0.60);
+  --bg-subtle:   rgba(51, 65, 85, 0.40);
+  --bg-border:   rgba(255, 255, 255, 0.10);
+  --bg-border-subtle: rgba(255, 255, 255, 0.06);
 
-  /* Text */
-  --text-primary:   #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted:     #71717a;
+  /* Glass properties */
+  --glass-bg:     rgba(15, 23, 42, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur:   blur(20px);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
 
-  /* Accent — Indigo */
+  /* Text — high contrast readability */
+  --text-primary:   #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #94a3b8;
+
+  /* Accent — Indigo / Violet */
   --accent:         #6366f1;
   --accent-hover:   #818cf8;
-  --accent-subtle:  rgba(99, 102, 241, 0.12);
-  --accent-border:  rgba(99, 102, 241, 0.3);
+  --accent-subtle:  rgba(99, 102, 241, 0.16);
+  --accent-border:  rgba(99, 102, 241, 0.35);
 
   /* Semantic */
   --green:  #22c55e;
-  --green-bg: rgba(34, 197, 94, 0.12);
-  --green-border: rgba(34, 197, 94, 0.25);
+  --green-bg: rgba(34, 197, 94, 0.14);
+  --green-border: rgba(34, 197, 94, 0.3);
 
   --amber:  #f59e0b;
-  --amber-bg: rgba(245, 158, 11, 0.12);
-  --amber-border: rgba(245, 158, 11, 0.25);
+  --amber-bg: rgba(245, 158, 11, 0.14);
+  --amber-border: rgba(245, 158, 11, 0.3);
 
   --red:    #ef4444;
-  --red-bg: rgba(239, 68, 68, 0.12);
-  --red-border: rgba(239, 68, 68, 0.25);
+  --red-bg: rgba(239, 68, 68, 0.14);
+  --red-border: rgba(239, 68, 68, 0.3);
 
   --cyan:   #06b6d4;
-  --cyan-bg: rgba(6, 182, 212, 0.12);
-  --cyan-border: rgba(6, 182, 212, 0.25);
+  --cyan-bg: rgba(6, 182, 212, 0.14);
+  --cyan-border: rgba(6, 182, 212, 0.3);
 
-  --purple: #a855f7;
-  --purple-bg: rgba(168, 85, 247, 0.12);
-  --purple-border: rgba(168, 85, 247, 0.25);
+  --purple: #c084fc;
+  --purple-bg: rgba(192, 132, 252, 0.14);
+  --purple-border: rgba(192, 132, 252, 0.3);
 
   /* Shadows & Canvas */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
 
-  --graph-canvas-bg: #09090b;
-  --graph-grid-color: #27272a;
-  --modal-backdrop: rgba(0, 0, 0, 0.75);
+  --graph-canvas-bg: #0b0f19;
+  --graph-grid-color: rgba(255, 255, 255, 0.08);
+  --modal-backdrop: rgba(3, 7, 18, 0.75);
 
   /* Radii */
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
 }
 
 [data-theme="light"] {
-  /* Background layers — clean airy research theme */
+  /* Background layers — clean light neutral / subtle cool glassmorphic gradient */
   --bg-base:     #f8fafc;
-  --bg-surface:  #ffffff;
-  --bg-elevated: #f1f5f9;
-  --bg-subtle:   #e2e8f0;
-  --bg-border:   #cbd5e1;
-  --bg-border-subtle: #e2e8f0;
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #eef2ff 40%, #f1f5f9 100%);
+  --bg-surface:  rgba(255, 255, 255, 0.75);
+  --bg-elevated: rgba(241, 245, 249, 0.80);
+  --bg-subtle:   rgba(226, 232, 240, 0.60);
+  --bg-border:   rgba(226, 232, 240, 0.90);
+  --bg-border-subtle: rgba(203, 213, 225, 0.60);
 
-  /* Text — deep slate contrast */
+  /* Glass properties */
+  --glass-bg:     rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(226, 232, 240, 0.95);
+  --glass-blur:   blur(20px);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+
+  /* Text — deep navy contrast */
   --text-primary:   #0f172a;
   --text-secondary: #334155;
   --text-muted:     #64748b;
@@ -77,38 +91,38 @@
   /* Accent — Indigo */
   --accent:         #4f46e5;
   --accent-hover:   #4338ca;
-  --accent-subtle:  rgba(79, 70, 229, 0.08);
-  --accent-border:  rgba(79, 70, 229, 0.25);
+  --accent-subtle:  rgba(79, 70, 229, 0.10);
+  --accent-border:  rgba(79, 70, 229, 0.30);
 
   /* Semantic */
   --green:  #16a34a;
-  --green-bg: rgba(22, 163, 74, 0.1);
-  --green-border: rgba(22, 163, 74, 0.25);
+  --green-bg: rgba(22, 163, 74, 0.12);
+  --green-border: rgba(22, 163, 74, 0.3);
 
   --amber:  #d97706;
-  --amber-bg: rgba(217, 119, 6, 0.1);
-  --amber-border: rgba(217, 119, 6, 0.25);
+  --amber-bg: rgba(217, 119, 6, 0.12);
+  --amber-border: rgba(217, 119, 6, 0.3);
 
   --red:    #dc2626;
-  --red-bg: rgba(220, 38, 38, 0.1);
-  --red-border: rgba(220, 38, 38, 0.25);
+  --red-bg: rgba(220, 38, 38, 0.12);
+  --red-border: rgba(220, 38, 38, 0.3);
 
   --cyan:   #0891b2;
-  --cyan-bg: rgba(8, 145, 178, 0.1);
-  --cyan-border: rgba(8, 145, 178, 0.25);
+  --cyan-bg: rgba(8, 145, 178, 0.12);
+  --cyan-border: rgba(8, 145, 178, 0.3);
 
   --purple: #9333ea;
-  --purple-bg: rgba(147, 51, 234, 0.1);
-  --purple-border: rgba(147, 51, 234, 0.25);
+  --purple-bg: rgba(147, 51, 234, 0.12);
+  --purple-border: rgba(147, 51, 234, 0.3);
 
   /* Shadows & Canvas */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(31, 38, 135, 0.07);
+  --shadow-lg: 0 16px 40px rgba(31, 38, 135, 0.12);
 
   --graph-canvas-bg: #f8fafc;
-  --graph-grid-color: #cbd5e1;
-  --modal-backdrop: rgba(15, 23, 42, 0.5);
+  --graph-grid-color: rgba(148, 163, 184, 0.25);
+  --modal-backdrop: rgba(15, 23, 42, 0.45);
 }
 
 /* ============================================================
@@ -192,6 +206,8 @@ a { color: inherit; text-decoration: none; }
   width: 220px;
   flex-shrink: 0;
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur, blur(20px));
+  -webkit-backdrop-filter: var(--glass-blur, blur(20px));
   border-right: 1px solid var(--bg-border);
   display: flex;
   flex-direction: column;
@@ -199,6 +215,7 @@ a { color: inherit; text-decoration: none; }
   position: sticky;
   top: 0;
   overflow-y: auto;
+  z-index: 40;
 }
 
 /* Main content area */
@@ -207,6 +224,7 @@ a { color: inherit; text-decoration: none; }
   min-width: 0;
   overflow-y: auto;
   height: 100vh;
+  background: var(--bg-gradient, var(--bg-base));
 }
 
 .page-container {
@@ -240,6 +258,8 @@ a { color: inherit; text-decoration: none; }
   padding: 12px 32px;
   border-bottom: 1px solid var(--bg-border);
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur, blur(20px));
+  -webkit-backdrop-filter: var(--glass-blur, blur(20px));
   position: sticky;
   top: 0;
   z-index: 30;
@@ -337,10 +357,12 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ============================================================
-   SURFACE / PANEL
+   SURFACE / PANEL & GLASSMORPHISM
    ============================================================ */
 .panel {
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur, blur(20px));
+  -webkit-backdrop-filter: var(--glass-blur, blur(20px));
   border: 1px solid var(--bg-border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
@@ -348,8 +370,28 @@ a { color: inherit; text-decoration: none; }
 
 .panel-sm {
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur, blur(16px));
+  -webkit-backdrop-filter: var(--glass-blur, blur(16px));
   border: 1px solid var(--bg-border);
   border-radius: var(--r-md);
+}
+
+.glass-surface, .glass-card, .glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--r-lg);
+}
+
+.glass-modal {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--r-lg);
 }
 
 .divider {
