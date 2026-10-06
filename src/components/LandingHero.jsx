@@ -224,7 +224,7 @@ export default function LandingHero({ onExplore, onSeeHowItWorks, onOpenPitchMod
       <section className="grid md:grid-cols-2 gap-12 items-center">
         {/* Left: Narrative */}
         <div className="space-y-5">
-          <div className="section-label">Why ProofWeave Exists</div>
+          <div className="section-label">Why Verixa Exists</div>
           <h2 className="text-3xl font-extrabold text-white leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             The research collaboration gap is a trust problem.
           </h2>
@@ -232,7 +232,7 @@ export default function LandingHero({ onExplore, onSeeHowItWorks, onOpenPitchMod
             Research teams work hard. Sponsors invest. Mentors guide. But when it's time to assign credit or release funding, there's no tamper-evident trail — just claims.
           </p>
           <p className="text-slate-400 leading-relaxed text-[15px]">
-            ProofWeave fills this gap with a cryptographically-anchored proof layer — every action, every validation, every payout traced back to its source.
+            Verixa fills this gap with a cryptographically-anchored proof layer — every action, every validation, every payout traced back to its source.
           </p>
           <button onClick={onExplore} className="btn-ghost inline-flex">
             See How It Works <ChevronRight className="w-4 h-4" />
@@ -328,7 +328,7 @@ export default function LandingHero({ onExplore, onSeeHowItWorks, onOpenPitchMod
         <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-32 bg-indigo-500/15 blur-3xl pointer-events-none" />
         <div className="relative space-y-4">
-          <div className="section-label text-indigo-400">The ProofWeave Promise</div>
+          <div className="section-label text-indigo-400">The Verixa Promise</div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white max-w-2xl mx-auto leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             "Research should not only show the result.<br />It should show{' '}
             <span className="gradient-text">who made it possible.</span>"

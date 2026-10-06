@@ -71,7 +71,7 @@ export default function ResearchPassport({ onOpenProofModal }) {
             <span className="badge badge-green">Verified</span>
           </div>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 6 }}>{role}</p>
-          <p style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Research Passport · Issued by ProofWeave · Gardenia 2K26</p>
+          <p style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Research Passport · Issued by Verixa · Gardenia 2K26</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <button className="btn btn-secondary btn-sm">Export PDF</button>

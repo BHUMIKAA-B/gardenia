@@ -149,7 +149,7 @@ export default function AIControlRoom({ onTriggerDeniedAccess }) {
       <div style={{ paddingTop: 24, borderTop: '1px solid var(--bg-border)' }}>
         <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 12 }}>Governing Principle</p>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 560 }}>
-          AI agents in ProofWeave operate under the principle: <em style={{ color: 'var(--text-primary)' }}>AI can assist, but AI cannot own.</em> Every AI action is attributed to a named human owner. Cross-project access is blocked and logged immediately.
+          AI agents in Verixa operate under the principle: <em style={{ color: 'var(--text-primary)' }}>AI can assist, but AI cannot own.</em> Every AI action is attributed to a named human owner. Cross-project access is blocked and logged immediately.
         </p>
       </div>
     </div>

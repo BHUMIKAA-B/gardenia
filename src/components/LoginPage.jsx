@@ -70,7 +70,7 @@ export default function LoginPage() {
       }}>
         {/* Logo */}
         <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 64 }}>
-          Proof<span style={{ color: 'var(--accent)' }}>Weave</span>
+          Ver<span style={{ color: 'var(--accent)' }}>ixa</span>
         </div>
 
         {/* Eyebrow */}

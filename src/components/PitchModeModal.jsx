@@ -14,7 +14,7 @@ const SLIDES = [
   },
   {
     id: 'solution',
-    title: 'The ProofWeave Solution',
+    title: 'The Verixa Solution',
     content: [
       'Every research action is scoped, logged, and timestamped',
       'Every AI contribution has a named human owner',

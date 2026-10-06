@@ -45,7 +45,7 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenPitchMode, unre
     <aside className="sidebar">
       {/* Logo */}
       <div className="nav-logo" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
-        Proof<span style={{ color: 'var(--accent)' }}>Weave</span>
+        Ver<span style={{ color: 'var(--accent)' }}>ixa</span>
       </div>
 
       {/* Nav groups */}

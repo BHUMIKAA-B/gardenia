@@ -53,7 +53,7 @@ export const DEMO_CREDENTIALS = [
   },
   {
     key: 'admin',
-    name: 'ProofWeave Admin',
+    name: 'Verixa Admin',
     email: 'admin@proofweave.io',
     password: 'admin123',
     role: 'Platform Security & Governance',

@@ -501,12 +501,12 @@ export const PROOF_GRAPH_NODES = [
 
 export const JUDGE_QUESTIONS = [
   {
-    q: "How is ProofWeave different from LinkedIn or standard job portals?",
-    a: "LinkedIn lists unverified self-reported resumes. ProofWeave does not rely on claims. We connect research problems to verified skills, lock terms in a Project Charter, and track contributions on a Proof Graph where every work item is backed by inspectable code commits, datasets, and expert reviews."
+    q: "How is Verixa different from LinkedIn or standard job portals?",
+    a: "LinkedIn lists unverified self-reported resumes. Verixa does not rely on claims. We connect research problems to verified skills, lock terms in a Project Charter, and track contributions on a Proof Graph where every work item is backed by inspectable code commits, datasets, and expert reviews."
   },
   {
-    q: "Why would students build their profile on ProofWeave?",
-    a: "Because certificates only show course attendance, not actual work capability. ProofWeave builds a 'Research Passport'—a portfolio backed by real verified contributions that graduate admissions or industry R&D teams can directly audit."
+    q: "Why would students build their profile on Verixa?",
+    a: "Because certificates only show course attendance, not actual work capability. Verixa builds a 'Research Passport'—a portfolio backed by real verified contributions that graduate admissions or industry R&D teams can directly audit."
   },
   {
     q: "How do you prevent AI agents from taking credit or leaking data?",
@@ -518,18 +518,18 @@ export const JUDGE_QUESTIONS = [
   },
   {
     q: "How is contribution credit determined?",
-    a: "ProofWeave uses a transparent, explainable formula combining Evidence Quality (30%), Impact (30%), Mentor Validation (20%), and Milestone Completion (20%). Every participant can inspect the 'Why?' panel to see exact calculations."
+    a: "Verixa uses a transparent, explainable formula combining Evidence Quality (30%), Impact (30%), Mentor Validation (20%), and Milestone Completion (20%). Every participant can inspect the 'Why?' panel to see exact calculations."
   },
   {
     q: "Does this platform support non-paid academic research?",
-    a: "Yes. Not all research involves funding. ProofWeave supports non-monetary projects where rewards consist of verified Research Passport credentials, co-authorship eligibility, and domain mentor reviews."
+    a: "Yes. Not all research involves funding. Verixa supports non-monetary projects where rewards consist of verified Research Passport credentials, co-authorship eligibility, and domain mentor reviews."
   },
   {
     q: "How do you protect confidential sponsor data?",
     a: "Access control is strictly role-based and project-scoped. Students and AI assistants can only access permitted project folders. In our Trust Sandbox, users can test how unauthorized requests are blocked."
   },
   {
-    q: "Why is ProofWeave better than using Slack + GitHub + Google Drive separately?",
-    a: "Separate tools lead to lost attribution, scope creep, and payment friction. ProofWeave unifies matching, project governance, evidence tracking, AI safety, and escrow payouts into one seamless research workspace."
+    q: "Why is Verixa better than using Slack + GitHub + Google Drive separately?",
+    a: "Separate tools lead to lost attribution, scope creep, and payment friction. Verixa unifies matching, project governance, evidence tracking, AI safety, and escrow payouts into one seamless research workspace."
   }
 ];

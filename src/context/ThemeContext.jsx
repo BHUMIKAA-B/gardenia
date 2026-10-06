@@ -5,7 +5,7 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('proofweave-theme');
+      const saved = localStorage.getItem('verixa-theme');
       if (saved === 'light' || saved === 'dark') {
         return saved;
       }
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }) {
       root.classList.add('light');
       root.classList.remove('dark');
     }
-    localStorage.setItem('proofweave-theme', theme);
+    localStorage.setItem('verixa-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

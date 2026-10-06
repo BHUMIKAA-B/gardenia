@@ -402,7 +402,7 @@ function MainAppContent() {
         <header className="app-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
-            <span style={{ fontSize: 13, fontFamily: '"Times New Roman", Times, serif', fontWeight: 600, color: 'var(--text-primary)' }}>ProofWeave Trust Network</span>
+            <span style={{ fontSize: 13, fontFamily: '"Times New Roman", Times, serif', fontWeight: 600, color: 'var(--text-primary)' }}>Verixa Trust Network</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
@@ -470,7 +470,7 @@ function MainAppContent() {
           background: 'var(--bg-surface)',
         }}>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            <strong style={{ color: 'var(--text-secondary)' }}>ProofWeave</strong> · Gardenia 2K26
+            <strong style={{ color: 'var(--text-secondary)' }}>Verixa</strong> · Gardenia 2K26
           </span>
           <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="status-dot status-dot-green" />
