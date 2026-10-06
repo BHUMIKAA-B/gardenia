@@ -86,30 +86,38 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /* ---------------------------------------------------------------- */
-  /*  login(userObject) — accepts a full user object or just email+pw  */
+  /*  login — flexible: handles (email, password) OR a user object     */
   /* ---------------------------------------------------------------- */
-  const login = (userObj) => {
-    setUser(userObj);
-    setIsAuthenticated(true);
-    localStorage.setItem('pw_user_email', userObj.email);
-  };
-
-  /* Legacy helper (email + password) – used by old LoginForm if any */
-  const loginWithCredentials = async (email, password) => {
+  const login = async (emailOrObj, password) => {
+    // Called with a user object directly (e.g., from demo quick-select)
+    if (emailOrObj && typeof emailOrObj === 'object' && emailOrObj.email) {
+      setUser(emailOrObj);
+      setIsAuthenticated(true);
+      localStorage.setItem('pw_user_email', emailOrObj.email);
+      return { success: true, user: emailOrObj };
+    }
+    // Called with (email, password) strings
+    const email = String(emailOrObj || '').toLowerCase().trim();
     const matched = DEMO_CREDENTIALS.find(
-      c => c.email.toLowerCase() === email.toLowerCase() && c.password === password
+      c => c.email.toLowerCase() === email && c.password === password
     );
     if (matched) {
-      login(matched);
+      setUser(matched);
+      setIsAuthenticated(true);
+      localStorage.setItem('pw_user_email', matched.email);
       return { success: true, user: matched };
     }
     return { success: false, error: 'Invalid email or password' };
   };
 
+  /* Legacy alias */
+  const loginWithCredentials = login;
+
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('pw_user_email');
+    localStorage.removeItem('pw_token');
   };
 
   const markNotificationsRead = () =>

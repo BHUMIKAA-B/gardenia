@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ActivityProvider } from './context/ActivityContext';
@@ -27,6 +27,7 @@ import WorkUpdatesView from './components/WorkUpdatesView';
 import ReplacementView from './components/ReplacementView';
 import AIHandoverView from './components/AIHandoverView';
 import { Bell } from 'lucide-react';
+import { api } from './services/api';
 
 /* ── Workspace page: tabs for Team / Charter / Contributions ── */
 const PROJECT_TABS = [
@@ -77,7 +78,7 @@ function WorkspacePage({ project, onOpenProofModal }) {
       </div>
 
       <div key={tab} className="page-enter">
-        {tab === 'overview'      && <ProjectOverview />}
+        {tab === 'overview'      && <ProjectOverview project={project} />}
         {tab === 'charter'       && <ProjectCharter onProceedToGraph={() => {}} />}
         {tab === 'contributions' && <ContributionLedger onOpenProofModal={onOpenProofModal} />}
       </div>
@@ -85,12 +86,24 @@ function WorkspacePage({ project, onOpenProofModal }) {
   );
 }
 
-function ProjectOverview() {
-  const members = [
+function ProjectOverview({ project }) {
+  const members = project?.team || [
     { name: 'Bhumikaa B', role: 'Data Engineer', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=bhumikaa' },
     { name: 'Aarav Patel', role: 'ML Developer', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=aarav' },
     { name: 'Dr. Meera Rao', role: 'Mentor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=meera' },
   ];
+
+  const milestones = project?.milestones || [
+    { label: 'M1 — Data Pipeline', pct: 100, status: 'Released' },
+    { label: 'M2 — Prediction Model', pct: 55, status: 'In Progress' },
+    { label: 'M3 — Final Report', pct: 0, status: 'Upcoming' },
+  ];
+
+  const milestonesForDisplay = milestones.map(m => ({
+    label: m.label || m.title,
+    pct: m.pct !== undefined ? m.pct : (m.status === 'Verified' ? 100 : m.status === 'In Progress' ? 55 : 0),
+    status: m.status === 'Verified' ? 'Released' : (m.status || 'Upcoming')
+  }));
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 32 }}>
@@ -101,8 +114,7 @@ function ProjectOverview() {
         <div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 10 }}>Objective</p>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            Clean and validate 12,400 water-quality sensor telemetry records and train an LSTM neural
-            network model forecasting 48-hour contamination spikes for AquaNova Research Labs.
+            {project?.description || "Clean and validate 12,400 water-quality sensor telemetry records and train an LSTM neural network model forecasting 48-hour contamination spikes for AquaNova Research Labs."}
           </p>
         </div>
 
@@ -110,11 +122,7 @@ function ProjectOverview() {
         <div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 12 }}>Milestones</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {[
-              { label: 'M1 — Data Pipeline', pct: 100, status: 'Released' },
-              { label: 'M2 — Prediction Model', pct: 55, status: 'In Progress' },
-              { label: 'M3 — Final Report', pct: 0, status: 'Upcoming' },
-            ].map(m => (
+            {milestonesForDisplay.map(m => (
               <div key={m.label}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontSize: 13.5, color: 'var(--text-secondary)' }}>{m.label}</span>
@@ -162,8 +170,14 @@ function ProjectOverview() {
           <p style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 12 }}>Team</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {members.map(m => (
-              <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--bg-border)' }}>
-                <img src={m.avatar} alt="" style={{ width: 28, height: 28, borderRadius: '50%' }} />
+              <div key={m.name || m.role} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--bg-border)' }}>
+                {m.avatar ? (
+                  <img src={m.avatar} alt="" style={{ width: 28, height: 28, borderRadius: '50%' }} />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+                    {(m.name || '?')[0]}
+                  </div>
+                )}
                 <div>
                   <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{m.name}</p>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.role}</p>
@@ -176,6 +190,7 @@ function ProjectOverview() {
         {/* Quick stats */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {[
+            { label: 'Progress', value: `${project?.progress || 62}%` },
             { label: 'Total Contributions', value: '27' },
             { label: 'Verified Records', value: '12,400' },
             { label: 'Total Credit Attributed', value: '37%' },
@@ -241,6 +256,7 @@ function HomePage({ onNavigate }) {
                 padding: '14px 0',
                 borderBottom: '1px solid var(--bg-border)',
                 cursor: 'pointer',
+                transition: 'padding-left 0.15s',
               }}
               onMouseEnter={e => e.currentTarget.style.paddingLeft = '6px'}
               onMouseLeave={e => e.currentTarget.style.paddingLeft = '0'}
@@ -291,6 +307,23 @@ function MainAppContent() {
   const [whyProject, setWhyProject] = useState(null);
   const [proofNode, setProofNode] = useState(null);
   const [deniedData, setDeniedData] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [selectedResearchForHandover, setSelectedResearchForHandover] = useState(null);
+
+  // Fetch real notification unread count
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const fetchCount = () => {
+      api.getNotifications().then(data => {
+        if (data && typeof data.unread_count === 'number') {
+          setUnreadCount(data.unread_count);
+        }
+      }).catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) return <LoginPage />;
 
@@ -299,9 +332,23 @@ function MainAppContent() {
     window.scrollTo({ top: 0 });
   };
 
-  const handleSelectProject = (proj) => {
-    if (proj) setSelectedProject(proj);
+  const handleSelectProject = (projObj) => {
+    // projObj may be a full project object or just an ID string
+    if (projObj && typeof projObj === 'object') {
+      setSelectedProject(projObj);
+    } else if (typeof projObj === 'string') {
+      // Try to fetch the project details if only ID was given
+      api.getProjectDetail(projObj).then(data => {
+        if (data) setSelectedProject(data);
+      });
+    }
     handleTab('workspace');
+  };
+
+  const handleNotificationNavigate = (notif) => {
+    // Decrement count when user opens notifications
+    setUnreadCount(0);
+    handleTab('notifications');
   };
 
   const renderPage = () => {
@@ -311,9 +358,25 @@ function MainAppContent() {
       case 'workspace':     return <WorkspacePage project={selectedProject} onOpenProofModal={n => setProofNode(n)} />;
       case 'messages':      return <MessagesView />;
       case 'updates':        return <WorkUpdatesView onRequestReplacement={() => handleTab('replacement')} />;
-      case 'notifications':  return <NotificationCenter onNavigateTab={handleTab} />;
-      case 'replacement':    return <ReplacementView onStartHandover={() => handleTab('handover')} />;
-      case 'handover':       return <AIHandoverView onProceedToWorkspace={() => handleTab('workspace')} onOpenProofModal={n => setProofNode(n)} />;
+      case 'notifications':  return <NotificationCenter onNavigateTab={(tab, projId) => {
+        if (projId && tab === 'discover') {
+          // Navigate to specific research problem
+          handleTab('discover');
+        } else {
+          handleTab(tab);
+        }
+        setUnreadCount(0);
+      }} />;
+      case 'replacement':    return <ReplacementView onStartHandover={(repId, projectId) => {
+        setSelectedResearchForHandover({ repId, projectId });
+        handleTab('handover');
+      }} />;
+      case 'handover':       return <AIHandoverView
+        projectId={selectedResearchForHandover?.projectId || selectedProject?.id || "PW-1042"}
+        replacementId={selectedResearchForHandover?.repId}
+        onProceedToWorkspace={() => handleTab('workspace')}
+        onOpenProofModal={n => setProofNode(n)}
+      />;
       case 'proof':         return <ProofGraph onOpenProofModal={n => setProofNode(n)} />;
       case 'ai':            return <AIControlRoom onTriggerDeniedAccess={d => setDeniedData(d)} />;
       case 'passport':      return <ResearchPassport onOpenProofModal={a => setProofNode(a)} />;
@@ -333,20 +396,51 @@ function MainAppContent() {
       <main className="main-content">
         {/* Global App Header Bar */}
         <header className="app-header">
-          <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
-            <span className="w-2 h-2 rounded-full bg-indigo-500" />
-            <span style={{ color: 'var(--text-secondary)' }}>ProofWeave Trust Network</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+            <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-secondary)' }}>ProofWeave Trust Network</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
               onClick={() => handleTab('notifications')}
-              className="relative p-1.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white transition-all"
+              style={{
+                position: 'relative',
+                padding: '6px',
+                borderRadius: 'var(--r-sm)',
+                border: '1px solid var(--bg-border)',
+                background: 'var(--bg-surface)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.15s',
+              }}
               title="Notifications"
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
             >
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white font-mono text-[9px] font-bold rounded-full flex items-center justify-center">
-                3
-              </span>
+              <Bell style={{ width: 16, height: 16 }} />
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  width: 16,
+                  height: 16,
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'monospace',
+                }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </button>
             <ThemeToggle />
           </div>

@@ -17,7 +17,7 @@ def seed_database(db: Session):
 
     # 1. Users
     user_admin = User(
-        email="admin@proofweave.ai",
+        email="admin@proofweave.io",
         hashed_password=hash_password("admin123"),
         full_name="ProofWeave Admin",
         role="admin",
@@ -30,7 +30,7 @@ def seed_database(db: Session):
     )
     
     user_bhumikaa = User(
-        email="bhumikaa@proofweave.ai",
+        email="bhumikaa@proofweave.io",
         hashed_password=hash_password("bhumikaa123"),
         full_name="Bhumikaa B",
         role="student",
@@ -43,7 +43,7 @@ def seed_database(db: Session):
     )
 
     user_aarav = User(
-        email="aarav@proofweave.ai",
+        email="aarav@proofweave.io",
         hashed_password=hash_password("aarav123"),
         full_name="Aarav Patel",
         role="student",
@@ -56,7 +56,7 @@ def seed_database(db: Session):
     )
 
     user_meera = User(
-        email="meera@proofweave.ai",
+        email="meera@proofweave.io",
         hashed_password=hash_password("meera123"),
         full_name="Dr. Meera Rao",
         role="expert",
@@ -69,7 +69,7 @@ def seed_database(db: Session):
     )
 
     user_sponsor = User(
-        email="sponsor@aquanova.ai",
+        email="sponsor@aquanova.io",
         hashed_password=hash_password("sponsor123"),
         full_name="AquaNova Research Director",
         role="sponsor",

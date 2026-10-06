@@ -50,38 +50,38 @@ const TIMELINE_STEPS = [
   { step: "05", label: "Researcher Review", done: false }
 ];
 
-export default function AIHandoverView({ onProceedToWorkspace, onOpenProofModal }) {
+export default function AIHandoverView({ onProceedToWorkspace, onOpenProofModal, projectId = "PW-1042", replacementId }) {
   const { addToast } = useToast();
   const [handover, setHandover] = useState(INITIAL_HANDOVER);
-  const [handoverState, setHandoverState] = useState('Generated'); // Not Started, Generating..., Generated, Needs Review, Approved, Failed
+  const [handoverState, setHandoverState] = useState('Not Started'); // Not Started, Generating..., Generated, Needs Review, Approved, Failed
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
-    api.getHandover("PW-1042").then(data => {
+    setHandoverState('Not Started');
+    api.getHandover(projectId).then(data => {
       if (!isMounted) return;
       if (data && data.id) {
         setHandover(data);
         setHandoverState('Generated');
-      } else if (data === null) {
-        // Access denied or null
-        setErrorMsg("Unable to retrieve handover session. Access control active.");
+      } else {
+        // No existing handover — ready to generate
+        setHandoverState('Not Started');
       }
     }).catch(err => {
       if (isMounted) {
-        setHandoverState('Failed');
-        setErrorMsg("Backend connection timeout or access check restriction.");
+        setHandoverState('Not Started');
       }
     });
 
     return () => { isMounted = false; };
-  }, []);
+  }, [projectId]);
 
   const handleGenerate = async () => {
     setHandoverState('Generating...');
     setErrorMsg(null);
     try {
-      const res = await api.generateHandover("PW-1042", "REP-101");
+      const res = await api.generateHandover(projectId, replacementId || "REP-101");
       if (res && res.success) {
         setHandover(prev => ({ ...prev, ...res }));
         setHandoverState('Generated');
@@ -104,6 +104,7 @@ export default function AIHandoverView({ onProceedToWorkspace, onOpenProofModal 
     addToast({ title: 'Handover Accepted ✓', message: 'You have formally reviewed and accepted the project handover brief.' });
   };
 
+
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
@@ -113,7 +114,13 @@ export default function AIHandoverView({ onProceedToWorkspace, onOpenProofModal 
             <span className="badge badge-indigo">
               <Bot className="w-3.5 h-3.5 text-purple-400" /> AI-Assisted Project Handover
             </span>
-            <span className={`badge ${handoverState === 'Approved' ? 'badge-green' : handoverState === 'Failed' ? 'badge-red' : 'badge-cyan'}`}>
+            <span className={`badge ${
+              handoverState === 'Approved' ? 'badge-green' :
+              handoverState === 'Failed' ? 'badge-red' :
+              handoverState === 'Not Started' ? 'badge-gray' :
+              handoverState === 'Generating...' ? 'badge-amber' :
+              'badge-cyan'
+            }`}>
               {handoverState}
             </span>
           </div>
@@ -126,15 +133,24 @@ export default function AIHandoverView({ onProceedToWorkspace, onOpenProofModal 
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={handleGenerate}
-            disabled={handoverState === 'Generating...'}
-            className="btn btn-secondary btn-sm"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-purple-400 ${handoverState === 'Generating...' ? 'animate-spin' : ''}`} />
-            {handoverState === 'Generating...' ? 'Generating...' : 'Regenerate Brief'}
-          </button>
-
+          {handoverState === 'Not Started' ? (
+            <button
+              onClick={handleGenerate}
+              className="btn btn-primary btn-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Generate AI Handover Brief
+            </button>
+          ) : (
+            <button
+              onClick={handleGenerate}
+              disabled={handoverState === 'Generating...'}
+              className="btn btn-secondary btn-sm"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-purple-400 ${handoverState === 'Generating...' ? 'animate-spin' : ''}`} />
+              {handoverState === 'Generating...' ? 'Generating...' : 'Regenerate Brief'}
+            </button>
+          )}
           <button
             onClick={onProceedToWorkspace}
             className="btn btn-primary btn-sm"

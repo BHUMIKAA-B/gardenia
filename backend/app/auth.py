@@ -30,18 +30,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Optional[User]:
     if not token:
         # Fallback for demo mode: return default demo user if token absent
-        demo_user = db.query(User).filter(User.email == "bhumikaa@proofweave.ai").first()
+        demo_user = db.query(User).filter(User.email == "bhumikaa@proofweave.io").first()
         return demo_user
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: int = payload.get("sub")
         if user_id is None:
-            return db.query(User).filter(User.email == "bhumikaa@proofweave.ai").first()
+            return db.query(User).filter(User.email == "bhumikaa@proofweave.io").first()
     except Exception:
-        return db.query(User).filter(User.email == "bhumikaa@proofweave.ai").first()
+        return db.query(User).filter(User.email == "bhumikaa@proofweave.io").first()
     
     user = db.query(User).filter(User.id == user_id).first()
-    return user or db.query(User).filter(User.email == "bhumikaa@proofweave.ai").first()
+    return user or db.query(User).filter(User.email == "bhumikaa@proofweave.io").first()
 
 def require_role(roles: list[str]):
     def role_checker(user: User = Depends(get_current_user)):
