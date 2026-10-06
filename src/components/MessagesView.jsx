@@ -247,7 +247,7 @@ export default function MessagesView({ selectedConversationId, onSelectConversat
               </div>
             ) : (
               messages.map(m => {
-                const isSelf = user ? (m.sender_id === user.id || m.sender_name === user.name || m.sender_name === user.full_name) : false;
+                const isSelf = user ? (m.sender_id === user.id || (user.id && String(m.sender_id) === String(user.id)) || m.sender_name === user.name || m.sender_name === user.full_name) : false;
                 return (
                   <div key={m.id || Math.random()} className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'}`}>
                     <div className="flex items-center gap-1.5 text-[10px] mb-1 font-mono" style={{ color: 'var(--text-muted)' }}>

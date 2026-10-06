@@ -46,13 +46,17 @@ const CATEGORIES = ["All", "Unread", "Message", "Research Problem", "Work Update
 
 export default function NotificationCenter({ onNavigateTab }) {
   const { addToast } = useToast();
-  const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
 
   const fetchNotifs = () => {
     api.getNotifications(activeCategory).then(data => {
-      if (data && data.notifications && data.notifications.length > 0) {
-        setNotifications(data.notifications);
+      if (data) {
+        if (Array.isArray(data)) {
+          setNotifications(data);
+        } else if (data.notifications && Array.isArray(data.notifications)) {
+          setNotifications(data.notifications);
+        }
       }
     });
   };

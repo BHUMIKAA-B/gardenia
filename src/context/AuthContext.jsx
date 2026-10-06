@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -22,10 +23,10 @@ export const DEMO_CREDENTIALS = [
     name: 'Aarav Patel',
     email: 'aarav@proofweave.io',
     password: 'aarav123',
-    role: 'Student Researcher / ML Developer',
-    roleType: 'student',
+    role: 'Mentor / ML Advisor',
+    roleType: 'mentor',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=aarav',
-    badge: 'ML Student',
+    badge: 'Mentor',
     badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
   },
   {
@@ -33,10 +34,10 @@ export const DEMO_CREDENTIALS = [
     name: 'Dr. Meera Rao',
     email: 'meera@proofweave.io',
     password: 'meera123',
-    role: 'Domain Mentor / Senior Researcher',
+    role: 'Domain Expert / Senior Researcher',
     roleType: 'expert',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=meera',
-    badge: 'Mentor',
+    badge: 'Expert',
     badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
   },
   {
@@ -76,38 +77,79 @@ export const AuthProvider = ({ children }) => {
   /* Persist session across page refreshes */
   useEffect(() => {
     const savedEmail = localStorage.getItem('pw_user_email');
-    if (savedEmail) {
+    const savedToken = localStorage.getItem('pw_token');
+    if (savedEmail && savedToken) {
       const match = DEMO_CREDENTIALS.find(c => c.email === savedEmail);
       if (match) {
-        setUser(match);
+        // Restore user with the saved backend ID
+        const savedId = localStorage.getItem('pw_user_id');
+        setUser({ ...match, id: savedId ? parseInt(savedId) : null });
         setIsAuthenticated(true);
       }
     }
   }, []);
 
   /* ---------------------------------------------------------------- */
-  /*  login — flexible: handles (email, password) OR a user object     */
+  /*  login — calls the REAL backend API to get a JWT token            */
   /* ---------------------------------------------------------------- */
   const login = async (emailOrObj, password) => {
+    let email, pwd;
+
     // Called with a user object directly (e.g., from demo quick-select)
     if (emailOrObj && typeof emailOrObj === 'object' && emailOrObj.email) {
-      setUser(emailOrObj);
-      setIsAuthenticated(true);
-      localStorage.setItem('pw_user_email', emailOrObj.email);
-      return { success: true, user: emailOrObj };
+      email = emailOrObj.email;
+      pwd = emailOrObj.password;
+    } else {
+      // Called with (email, password) strings
+      email = String(emailOrObj || '').toLowerCase().trim();
+      pwd = password;
     }
-    // Called with (email, password) strings
-    const email = String(emailOrObj || '').toLowerCase().trim();
+
+    // Match against demo credentials for role/avatar info
     const matched = DEMO_CREDENTIALS.find(
-      c => c.email.toLowerCase() === email && c.password === password
+      c => c.email.toLowerCase() === email.toLowerCase() && c.password === pwd
     );
-    if (matched) {
+    if (!matched) {
+      return { success: false, error: 'Invalid email or password' };
+    }
+
+    // Call the REAL backend API to get a JWT token
+    try {
+      const backendRes = await api.login(email, pwd);
+      if (backendRes && backendRes.access_token) {
+        // Store the JWT token — this is CRITICAL for all authenticated API calls
+        localStorage.setItem('pw_token', backendRes.access_token);
+        localStorage.setItem('pw_user_email', email);
+
+        // Merge backend user data (has numeric id) with demo credential display data
+        const backendUser = backendRes.user || {};
+        const mergedUser = {
+          ...matched,
+          id: backendUser.id,
+          full_name: backendUser.full_name || matched.name,
+        };
+        localStorage.setItem('pw_user_id', String(backendUser.id || ''));
+
+        setUser(mergedUser);
+        setIsAuthenticated(true);
+        return { success: true, user: mergedUser };
+      } else {
+        // Backend login failed but credentials matched demo — use fallback
+        console.warn('Backend login returned no token, using fallback auth');
+        localStorage.setItem('pw_user_email', email);
+        localStorage.removeItem('pw_token');
+        setUser(matched);
+        setIsAuthenticated(true);
+        return { success: true, user: matched };
+      }
+    } catch (err) {
+      console.warn('Backend API offline, using fallback auth', err);
+      localStorage.setItem('pw_user_email', email);
+      localStorage.removeItem('pw_token');
       setUser(matched);
       setIsAuthenticated(true);
-      localStorage.setItem('pw_user_email', matched.email);
       return { success: true, user: matched };
     }
-    return { success: false, error: 'Invalid email or password' };
   };
 
   /* Legacy alias */
@@ -118,6 +160,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     localStorage.removeItem('pw_user_email');
     localStorage.removeItem('pw_token');
+    localStorage.removeItem('pw_user_id');
   };
 
   const markNotificationsRead = () =>
