@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, CheckCheck, Filter, ArrowRight } from 'lucide-react';
+import { Bell, CheckCheck, ArrowRight, MessageSquare } from 'lucide-react';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
@@ -42,19 +42,25 @@ const SAMPLE_NOTIFICATIONS = [
   }
 ];
 
-const CATEGORIES = ["All", "Unread", "Research Problem", "Work Update", "Replacement", "AI Handover"];
+const CATEGORIES = ["All", "Unread", "Message", "Research Problem", "Work Update", "Replacement", "AI Handover"];
 
 export default function NotificationCenter({ onNavigateTab }) {
   const { addToast } = useToast();
   const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS);
   const [activeCategory, setActiveCategory] = useState("All");
 
-  useEffect(() => {
+  const fetchNotifs = () => {
     api.getNotifications(activeCategory).then(data => {
       if (data && data.notifications && data.notifications.length > 0) {
         setNotifications(data.notifications);
       }
     });
+  };
+
+  useEffect(() => {
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 3000);
+    return () => clearInterval(interval);
   }, [activeCategory]);
 
   const handleMarkAllRead = () => {
@@ -75,16 +81,16 @@ export default function NotificationCenter({ onNavigateTab }) {
   });
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className="space-y-4 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: 'var(--bg-border)' }}>
         <div>
-          <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Bell className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
-            Notification Center
+          <h3 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: '"Times New Roman", Times, serif' }}>
+            <Bell className="w-4 h-4 text-indigo-500" />
+            Notification Center & Alert Audit
           </h3>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            Targeted updates for research problems, work logs, replacement candidates & AI handovers
+            Targeted notifications for private messages, research problems, work logs, replacement candidates & AI handovers
           </p>
         </div>
         <button
@@ -111,7 +117,7 @@ export default function NotificationCenter({ onNavigateTab }) {
       {/* Notifications list */}
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="panel empty-state">
+          <div className="panel p-8 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
             <p>No notifications found in this category.</p>
           </div>
         ) : (
@@ -119,7 +125,7 @@ export default function NotificationCenter({ onNavigateTab }) {
             <div
               key={item.id}
               onClick={() => handleMarkRead(item.id)}
-              className="panel p-4 transition-all cursor-pointer hover:border-indigo-500/50"
+              className="panel p-4 transition-all cursor-pointer hover:border-indigo-500/50 shadow-xs"
               style={{
                 borderColor: !item.is_read ? 'var(--accent-border)' : 'var(--bg-border)',
                 background: !item.is_read ? 'var(--accent-subtle)' : 'var(--bg-surface)'
@@ -129,7 +135,7 @@ export default function NotificationCenter({ onNavigateTab }) {
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`status-dot ${!item.is_read ? 'status-dot-green' : ''}`} />
-                    <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title}</span>
+                    <span className="text-xs font-bold" style={{ color: 'var(--text-primary)', fontFamily: '"Times New Roman", Times, serif' }}>{item.title}</span>
                     <span className="badge badge-gray font-mono text-[10px]">
                       {item.category}
                     </span>
@@ -138,7 +144,7 @@ export default function NotificationCenter({ onNavigateTab }) {
                   <p className="text-xs leading-relaxed pl-3.5" style={{ color: 'var(--text-secondary)' }}>{item.message}</p>
 
                   <div className="flex items-center gap-2 text-[10px] font-mono pl-3.5 pt-1" style={{ color: 'var(--text-muted)' }}>
-                    <span>{item.related_project_id}</span>
+                    <span>{item.related_project_id || 'PW-1042'}</span>
                     <span>·</span>
                     <span>{item.created_at}</span>
                   </div>
@@ -148,7 +154,10 @@ export default function NotificationCenter({ onNavigateTab }) {
                   onClick={(e) => {
                     e.stopPropagation();
                     handleMarkRead(item.id);
-                    if (item.category === 'Replacement' || item.category === 'AI Handover') {
+                    if (item.category === 'Message' || (item.action_link && item.action_link.startsWith('messages:'))) {
+                      const convId = item.action_link ? item.action_link.split(':')[1] : null;
+                      onNavigateTab && onNavigateTab('messages', convId);
+                    } else if (item.category === 'Replacement' || item.category === 'AI Handover') {
                       onNavigateTab && onNavigateTab('handover');
                     } else if (item.category === 'Work Update') {
                       onNavigateTab && onNavigateTab('updates');
@@ -156,7 +165,7 @@ export default function NotificationCenter({ onNavigateTab }) {
                       onNavigateTab && onNavigateTab('discover');
                     }
                   }}
-                  className="btn btn-ghost btn-sm text-xs font-medium shrink-0 flex items-center gap-1 text-indigo-500"
+                  className="btn btn-ghost btn-sm text-xs font-medium shrink-0 flex items-center gap-1 text-indigo-500 hover:text-indigo-600"
                 >
                   View <ArrowRight className="w-3 h-3" />
                 </button>

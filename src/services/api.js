@@ -1,4 +1,18 @@
-const API_BASE = "http://127.0.0.1:8001/api";
+const getApiBase = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    const base = import.meta.env.VITE_API_BASE_URL;
+    return base.endsWith('/api') ? base : `${base}/api`;
+  }
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:8000/api';
+    }
+    return '/api';
+  }
+  return 'http://127.0.0.1:8000/api';
+};
+
+const API_BASE = getApiBase();
 
 const getHeaders = () => {
   const token = localStorage.getItem("pw_token");
@@ -307,6 +321,28 @@ export const api = {
   getConversations: async () => {
     try {
       const res = await fetch(`${API_BASE}/messages/conversations`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  getUnreadMessageCount: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/messages/unread-count`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  createOrGetConversation: async (convData) => {
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(convData)
+      });
       if (!res.ok) return null;
       return await res.json();
     } catch (e) {

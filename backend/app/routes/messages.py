@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+from collections import Counter
 from ..database import get_db
-from ..models import Conversation, ConversationParticipant, Message, ProjectMember, User
+from ..models import Conversation, ConversationParticipant, Message, ProjectMember, User, Notification, Project
 from ..auth import get_current_user
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
@@ -16,8 +17,24 @@ class MessageCreate(BaseModel):
 
 class ConversationCreate(BaseModel):
     project_id: Optional[str] = "PW-1042"
-    title: str
+    title: Optional[str] = None
     participant_user_ids: List[int]
+
+@router.get("/unread-count")
+def get_unread_count(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    participant_entries = db.query(ConversationParticipant).filter(ConversationParticipant.user_id == current_user.id).all()
+    conv_ids = [p.conversation_id for p in participant_entries]
+
+    if not conv_ids:
+        return {"unread_count": 0}
+
+    total_unread = db.query(Message).filter(
+        Message.conversation_id.in_(conv_ids),
+        Message.sender_id != current_user.id,
+        Message.is_read == False
+    ).count()
+
+    return {"unread_count": total_unread}
 
 @router.get("/conversations")
 def get_conversations(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -44,11 +61,58 @@ def get_conversations(db: Session = Depends(get_db), current_user: User = Depend
             "title": c.title,
             "updated_at": c.updated_at.isoformat() if c.updated_at else None,
             "last_message": last_msg.text if last_msg else "No messages yet",
-            "last_message_time": last_msg.created_at.strftime("%H:%M") if last_msg else "",
+            "last_message_time": last_msg.created_at.strftime("%I:%M %p") if last_msg else "",
             "unread_count": unread_count,
             "participants": [{"id": p.user_id, "name": p.user_name, "role": p.user_role} for p in parts]
         })
     return result
+
+@router.post("/conversations")
+def create_or_get_conversation(conv_in: ConversationCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_ids = list(set([current_user.id] + conv_in.participant_user_ids))
+    
+    participant_convs = db.query(ConversationParticipant.conversation_id).filter(
+        ConversationParticipant.user_id.in_(user_ids)
+    ).all()
+    
+    conv_counts = Counter([c[0] for c in participant_convs])
+    existing_conv_id = None
+    for cid, count in conv_counts.items():
+        if count == len(user_ids):
+            conv_obj = db.query(Conversation).filter(Conversation.id == cid).first()
+            if conv_obj and (not conv_in.project_id or conv_obj.project_id == conv_in.project_id):
+                existing_conv_id = cid
+                break
+
+    if existing_conv_id:
+        conv = db.query(Conversation).filter(Conversation.id == existing_conv_id).first()
+        return {"id": conv.id, "title": conv.title, "project_id": conv.project_id, "is_new": False}
+
+    new_id = f"CONV-{int(datetime.utcnow().timestamp())}"
+    proj = db.query(Project).filter(Project.id == conv_in.project_id).first() if conv_in.project_id else None
+    new_conv = Conversation(
+        id=new_id,
+        project_id=conv_in.project_id,
+        project_title=proj.title if proj else "Research Project",
+        title=conv_in.title or f"{conv_in.project_id or 'Project'}: Research Chat",
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.add(new_conv)
+    
+    for uid in user_ids:
+        u = db.query(User).filter(User.id == uid).first()
+        if u:
+            cp = ConversationParticipant(
+                conversation_id=new_id,
+                user_id=u.id,
+                user_name=u.full_name,
+                user_role=u.role.capitalize() if u.role else "Researcher"
+            )
+            db.add(cp)
+            
+    db.commit()
+    return {"id": new_id, "title": new_conv.title, "project_id": new_conv.project_id, "is_new": True}
 
 @router.get("/conversations/{conversation_id}")
 def get_conversation_messages(conversation_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -61,7 +125,7 @@ def get_conversation_messages(conversation_id: str, db: Session = Depends(get_db
 
     messages = db.query(Message).filter(Message.conversation_id == conversation_id).order_by(Message.created_at.asc()).all()
 
-    # Mark unread messages as read
+    # Mark unread messages sent by others as read
     db.query(Message).filter(
         Message.conversation_id == conversation_id,
         Message.sender_id != current_user.id,
@@ -91,24 +155,45 @@ def send_message(conversation_id: str, msg_in: MessageCreate, db: Session = Depe
     if not part:
         raise HTTPException(status_code=403, detail="403 Forbidden: Access denied to research project chat.")
 
+    now = datetime.utcnow()
     new_msg = Message(
-        id=f"MSG-{int(datetime.utcnow().timestamp() * 1000)}",
+        id=f"MSG-{int(now.timestamp() * 1000)}",
         conversation_id=conversation_id,
         sender_id=current_user.id,
         sender_name=current_user.full_name,
-        sender_role=current_user.role,
+        sender_role=current_user.role.capitalize() if current_user.role else "Researcher",
         text=msg_in.text,
         attachment_ref=msg_in.attachment_ref,
         evidence_id=msg_in.evidence_id,
         is_read=False,
-        created_at=datetime.utcnow()
+        created_at=now
     )
     db.add(new_msg)
 
     conv = db.query(Conversation).filter(Conversation.id == conversation_id).first()
     if conv:
-        conv.updated_at = datetime.utcnow()
+        conv.updated_at = now
     
+    # Notify other participants in the conversation
+    other_parts = db.query(ConversationParticipant).filter(
+        ConversationParticipant.conversation_id == conversation_id,
+        ConversationParticipant.user_id != current_user.id
+    ).all()
+
+    for p in other_parts:
+        notif = Notification(
+            user_id=p.user_id,
+            title=f"New Message from {current_user.full_name}",
+            message=msg_in.text[:120],
+            notification_type="message",
+            category="Message",
+            related_project_id=conv.project_id if conv else "PW-1042",
+            action_link=f"messages:{conversation_id}",
+            is_read=False,
+            created_at=now
+        )
+        db.add(notif)
+
     db.commit()
     db.refresh(new_msg)
 
@@ -121,5 +206,6 @@ def send_message(conversation_id: str, msg_in: MessageCreate, db: Session = Depe
         "text": new_msg.text,
         "attachment_ref": new_msg.attachment_ref,
         "evidence_id": new_msg.evidence_id,
+        "is_read": False,
         "timestamp": new_msg.created_at.strftime("%I:%M %p")
     }

@@ -38,13 +38,13 @@ const NAV = [
   },
 ];
 
-export default function Sidebar({ activeTab, setActiveTab, onOpenPitchMode }) {
+export default function Sidebar({ activeTab, setActiveTab, onOpenPitchMode, unreadMessageCount = 0, unreadNotifCount = 0 }) {
   const { user, logout } = useAuth();
 
   return (
     <aside className="sidebar">
       {/* Logo */}
-      <div className="nav-logo">
+      <div className="nav-logo" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
         Proof<span style={{ color: 'var(--accent)' }}>Weave</span>
       </div>
 
@@ -54,6 +54,7 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenPitchMode }) {
           <div className="nav-section-label">{group.section}</div>
           {group.items.map(item => {
             const Icon = item.icon;
+            const badgeVal = item.id === 'messages' ? unreadMessageCount : item.id === 'notifications' ? unreadNotifCount : 0;
             return (
               <div
                 key={item.id}
@@ -61,7 +62,12 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenPitchMode }) {
                 onClick={() => setActiveTab(item.id)}
               >
                 <Icon />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {badgeVal > 0 && (
+                  <span className="bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full font-mono">
+                    {badgeVal}
+                  </span>
+                )}
               </div>
             );
           })}

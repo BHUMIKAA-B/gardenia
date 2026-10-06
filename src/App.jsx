@@ -307,37 +307,46 @@ function MainAppContent() {
   const [whyProject, setWhyProject] = useState(null);
   const [proofNode, setProofNode] = useState(null);
   const [deniedData, setDeniedData] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
+  const [selectedConvId, setSelectedConvId] = useState(null);
   const [selectedResearchForHandover, setSelectedResearchForHandover] = useState(null);
 
-  // Fetch real notification unread count
+  // Poll notification & unread message count from backend every 3 seconds
   useEffect(() => {
     if (!isAuthenticated) return;
-    const fetchCount = () => {
+    const fetchCounts = () => {
       api.getNotifications().then(data => {
         if (data && typeof data.unread_count === 'number') {
-          setUnreadCount(data.unread_count);
+          setUnreadNotifCount(data.unread_count);
+        }
+      }).catch(() => {});
+
+      api.getUnreadMessageCount().then(data => {
+        if (data && typeof data.unread_count === 'number') {
+          setUnreadMsgCount(data.unread_count);
         }
       }).catch(() => {});
     };
-    fetchCount();
-    const interval = setInterval(fetchCount, 30000); // refresh every 30s
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 3000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   if (!isAuthenticated) return <LoginPage />;
 
-  const handleTab = (tab) => {
+  const handleTab = (tab, extraParam) => {
     setActiveTab(tab);
+    if (tab === 'messages' && extraParam) {
+      setSelectedConvId(extraParam);
+    }
     window.scrollTo({ top: 0 });
   };
 
   const handleSelectProject = (projObj) => {
-    // projObj may be a full project object or just an ID string
     if (projObj && typeof projObj === 'object') {
       setSelectedProject(projObj);
     } else if (typeof projObj === 'string') {
-      // Try to fetch the project details if only ID was given
       api.getProjectDetail(projObj).then(data => {
         if (data) setSelectedProject(data);
       });
@@ -345,27 +354,16 @@ function MainAppContent() {
     handleTab('workspace');
   };
 
-  const handleNotificationNavigate = (notif) => {
-    // Decrement count when user opens notifications
-    setUnreadCount(0);
-    handleTab('notifications');
-  };
-
   const renderPage = () => {
     switch (activeTab) {
       case 'home':          return <HomePage onNavigate={handleTab} />;
       case 'discover':      return <ResearchDiscovery onSelectProject={handleSelectProject} onOpenWhyMatch={p => setWhyProject(p)} />;
       case 'workspace':     return <WorkspacePage project={selectedProject} onOpenProofModal={n => setProofNode(n)} />;
-      case 'messages':      return <MessagesView />;
+      case 'messages':      return <MessagesView selectedConversationId={selectedConvId} onSelectConversation={id => setSelectedConvId(id)} />;
       case 'updates':        return <WorkUpdatesView onRequestReplacement={() => handleTab('replacement')} />;
-      case 'notifications':  return <NotificationCenter onNavigateTab={(tab, projId) => {
-        if (projId && tab === 'discover') {
-          // Navigate to specific research problem
-          handleTab('discover');
-        } else {
-          handleTab(tab);
-        }
-        setUnreadCount(0);
+      case 'notifications':  return <NotificationCenter onNavigateTab={(tab, convId) => {
+        handleTab(tab, convId);
+        setUnreadNotifCount(0);
       }} />;
       case 'replacement':    return <ReplacementView onStartHandover={(repId, projectId) => {
         setSelectedResearchForHandover({ repId, projectId });
@@ -391,14 +389,20 @@ function MainAppContent() {
 
   return (
     <div className="app-layout">
-      <Sidebar activeTab={activeTab} setActiveTab={handleTab} onOpenPitchMode={() => setIsPitchOpen(true)} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={handleTab}
+        onOpenPitchMode={() => setIsPitchOpen(true)}
+        unreadMessageCount={unreadMsgCount}
+        unreadNotifCount={unreadNotifCount}
+      />
 
       <main className="main-content">
         {/* Global App Header Bar */}
         <header className="app-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
-            <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-secondary)' }}>ProofWeave Trust Network</span>
+            <span style={{ fontSize: 13, fontFamily: '"Times New Roman", Times, serif', fontWeight: 600, color: 'var(--text-primary)' }}>ProofWeave Trust Network</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
@@ -421,7 +425,7 @@ function MainAppContent() {
               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
             >
               <Bell style={{ width: 16, height: 16 }} />
-              {unreadCount > 0 && (
+              {unreadNotifCount > 0 && (
                 <span style={{
                   position: 'absolute',
                   top: -4,
@@ -438,7 +442,7 @@ function MainAppContent() {
                   justifyContent: 'center',
                   fontFamily: 'monospace',
                 }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
                 </span>
               )}
             </button>
