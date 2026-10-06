@@ -2,7 +2,9 @@ from sqlalchemy.orm import Session
 from .models import (
     User, Project, ProjectMember, ProjectCharter, Milestone,
     Contribution, Evidence, Validation, AIAgent, AuditEvent,
-    ResearchPassport, Reward, Dispute, MatchResult
+    ResearchPassport, Reward, Dispute, MatchResult,
+    Conversation, ConversationParticipant, Message, WorkUpdate,
+    ReplacementRequest, ReplacementCandidate, HandoverSession, Notification
 )
 from .auth import hash_password
 
@@ -340,22 +342,7 @@ def seed_database(db: Session):
         actions_completed=14
     )
 
-    ai2 = AIAgent(
-        id="AI-102",
-        name="Data Quality Assistant",
-        avatar="🔍",
-        human_owner_id=user_bhumikaa.id,
-        human_owner_name="Bhumikaa B",
-        project_id="PW-1042",
-        scope="Water Sensor CSV files in PW-1042 workspace",
-        allowed_data=["Water Sensor Telemetry CSVs"],
-        allowed_actions=["Identify data outliers", "Flag missing timestamps", "Generate summary statistics"],
-        blocked_actions=["Edit raw source files without git commit", "Read sponsor private credentials"],
-        status="Active & Scoped",
-        actions_completed=22
-    )
-
-    db.add_all([ai1, ai2])
+    db.add(ai1)
 
     # 9. Audit Events
     log1 = AuditEvent(
@@ -373,72 +360,7 @@ def seed_database(db: Session):
         status="Verified",
         hash="a91f82c4"
     )
-
-    log2 = AuditEvent(
-        id="LOG-1002",
-        timestamp="2026-10-04 16:15 UTC",
-        actor_name="Literature Scout Agent (AI)",
-        actor_role="AI Assistant (Human Owner: Aarav Patel)",
-        action="Literature Summary: Parsed 8 water research papers",
-        project_id="PW-1042",
-        evidence="Summary Report #LS-21 • Reference citations extracted",
-        event_type="AI Assistant",
-        validator="Aarav Patel (Human Owner)",
-        credit="5%",
-        payout_share="Attributed to Team",
-        status="Verified",
-        hash="3a9211cd"
-    )
-
-    log3 = AuditEvent(
-        id="LOG-1003",
-        timestamp="2026-10-05 09:04 UTC",
-        actor_name="Dr. Meera Rao",
-        actor_role="Domain Mentor",
-        action="Methodology Peer Review & Outlier Formula Validation",
-        project_id="PW-1042",
-        evidence="Review Report #MR-09 • Signed Verification",
-        event_type="Human",
-        validator="AquaNova Research Board",
-        credit="7%",
-        payout_share="₹7,000",
-        status="Verified",
-        hash="91ccef02"
-    )
-
-    log4 = AuditEvent(
-        id="LOG-1004",
-        timestamp="2026-10-05 14:10 UTC",
-        actor_name="PROJECT CHARTER ENGINE",
-        actor_role="Governance Engine",
-        action="Project Charter Signed & Locked by All Participants",
-        project_id="PW-1042",
-        evidence="Multi-party cryptographic digital acceptance log",
-        event_type="Governance",
-        validator="All 4 Project Stakeholders",
-        credit="N/A",
-        payout_share="N/A",
-        status="Locked",
-        hash="001199ee"
-    )
-
-    log5 = AuditEvent(
-        id="LOG-1005",
-        timestamp="2026-10-05 14:15 UTC",
-        actor_name="AI SCOPE SENTINEL",
-        actor_role="Security Governance",
-        action="Restricted Access Blocked (Literature Scout Agent AI -> PW-1088)",
-        project_id="PW-1088",
-        evidence="Attempted unauthorized cross-project file access on confidential genomic repository",
-        event_type="Security Alert",
-        validator="Project Scope Rule #88",
-        credit="N/A",
-        payout_share="N/A",
-        status="ACCESS DENIED (Logged)",
-        hash="ff008821"
-    )
-
-    db.add_all([log1, log2, log3, log4, log5])
+    db.add(log1)
 
     # 10. Research Passports
     rp_bhumikaa = ResearchPassport(
@@ -473,43 +395,9 @@ def seed_database(db: Session):
             }
         ]
     )
+    db.add(rp_bhumikaa)
 
-    rp_aarav = ResearchPassport(
-        user_id=user_aarav.id,
-        passport_id="RP-2026-3910",
-        credibility_score=88,
-        verified_contributions=14,
-        projects_count=3,
-        expert_reviews=5,
-        ai_assisted_works=8,
-        peer_validations=7,
-        categories={
-            "research": 94,
-            "engineering": 86,
-            "experimentation": 92,
-            "documentation": 88,
-            "review": 74,
-            "mentorship": 68
-        },
-        skills=["Python", "PyTorch", "LSTM", "Time-Series", "Scikit-Learn"],
-        verified_proof_artifacts=[
-            {
-                "id": "ART-805",
-                "project": "PW-1042 Urban Water Quality",
-                "title": "LSTM Contamination Prediction Model Implementation",
-                "type": "Git Commit & Model File",
-                "hash": "commit #b40c991",
-                "date": "05 Oct 2026",
-                "validator": "Dr. Meera Rao (Domain Mentor)",
-                "creditShare": "22%",
-                "status": "Verified"
-            }
-        ]
-    )
-
-    db.add_all([rp_bhumikaa, rp_aarav])
-
-    # 11. Rewards
+    # 11. Rewards & Disputes
     r1 = Reward(
         id="REW-901",
         project_id="PW-1042",
@@ -520,19 +408,8 @@ def seed_database(db: Session):
         credit_share="18%",
         status="Released"
     )
-    r2 = Reward(
-        id="REW-902",
-        project_id="PW-1042",
-        milestone_id="PW-1042-M1",
-        title="Milestone 1 Mentor Allocation",
-        amount="₹7,000",
-        recipient_name="Dr. Meera Rao",
-        credit_share="7%",
-        status="Released"
-    )
-    db.add_all([r1, r2])
+    db.add(r1)
 
-    # 12. Dispute
     disp = Dispute(
         id="DISP-101",
         project_id="PW-1042",
@@ -546,5 +423,143 @@ def seed_database(db: Session):
     )
     db.add(disp)
 
+    # 12. Chat Conversations & Messages
+    conv1 = Conversation(
+        id="CONV-101",
+        project_id="PW-1042",
+        project_title="AI-Assisted Urban Water Quality Prediction",
+        title="PW-1042: Student ↔ Mentor Discussion"
+    )
+    db.add(conv1)
     db.commit()
-    print("Database seeded successfully!")
+
+    cp1 = ConversationParticipant(conversation_id="CONV-101", user_id=user_bhumikaa.id, user_name="Bhumikaa B", user_role="Student")
+    cp2 = ConversationParticipant(conversation_id="CONV-101", user_id=user_meera.id, user_name="Dr. Meera Rao", user_role="Mentor")
+    db.add_all([cp1, cp2])
+
+    msg1 = Message(
+        id="MSG-101",
+        conversation_id="CONV-101",
+        sender_id=user_bhumikaa.id,
+        sender_name="Bhumikaa B",
+        sender_role="Student",
+        text="Hello Dr. Meera, I have completed validating the 12,400 water telemetry records. Attached the validation report.",
+        attachment_ref="Dataset Validation Report #EV-1024",
+        is_read=True
+    )
+    msg2 = Message(
+        id="MSG-102",
+        conversation_id="CONV-101",
+        sender_id=user_meera.id,
+        sender_name="Dr. Meera Rao",
+        sender_role="Mentor",
+        text="Great work Bhumikaa! Please review the 7% timestamp inconsistencies in sector B before feature engineering.",
+        is_read=True
+    )
+    db.add_all([msg1, msg2])
+
+    # 13. Work Updates
+    up1 = WorkUpdate(
+        id="UPD-101",
+        project_id="PW-1042",
+        author_id=user_bhumikaa.id,
+        author_name="Bhumikaa B",
+        author_role="Student",
+        update_type="Daily",
+        date="2026-10-06",
+        summary="Validated missing values in water quality dataset and completed 12,400 record review.",
+        work_completed="Reviewed 12,400 records, applied linear interpolation on missing sensor readings.",
+        challenges="7% records contained inconsistent timestamps in sector B.",
+        next_steps="Complete timestamp normalization and begin temporal feature generation.",
+        evidence_ref="Dataset Validation Report #a91f82c4",
+        effort_hours=5.0,
+        milestone_progress=55,
+        status="Reviewed",
+        reviewer_name="Dr. Meera Rao",
+        reviewer_comment="Approved. Please document the timestamp normalization methodology."
+    )
+    db.add(up1)
+
+    # 14. Replacement Request & Candidates
+    rep1 = ReplacementRequest(
+        id="REP-101",
+        project_id="PW-1042",
+        project_title="AI-Assisted Urban Water Quality Prediction",
+        requester_id=user_bhumikaa.id,
+        requester_name="Bhumikaa B",
+        requester_role="Student",
+        reason="Academic exam schedule constraint for upcoming 4 weeks.",
+        required_skills=["Python", "Machine Learning", "Data Analysis", "Time-Series Modeling"],
+        progress_pct=62,
+        last_milestone="Milestone 1 — Data Validation",
+        status="Approved",
+        approved_candidate_id=user_aarav.id,
+        approved_candidate_name="Aarav Patel"
+    )
+    db.add(rep1)
+
+    cand1 = ReplacementCandidate(
+        replacement_id="REP-101",
+        user_id=user_aarav.id,
+        user_name="Aarav Patel",
+        match_score=94.0,
+        status="Approved"
+    )
+    db.add(cand1)
+
+    # 15. Handover Session
+    ho1 = HandoverSession(
+        id="HO-101",
+        project_id="PW-1042",
+        replacement_id="REP-101",
+        requester_name="Bhumikaa B",
+        replacement_name="Aarav Patel",
+        status="Completed",
+        completed_tasks=[
+          "Dataset cleaning & validation (12,400 sensor records)",
+          "Missing-value analysis & timestamp normalization",
+          "Literature Scout AI paper summarization (34 papers)"
+        ],
+        pending_tasks=[
+          "Temporal feature engineering (rainfall/spikes)",
+          "Train 48-hour LSTM forecasting model",
+          "Comparative benchmark evaluation report"
+        ],
+        key_findings=[
+          "12,400 telemetry records cleaned & validated.",
+          "7% timestamp inconsistencies resolved via linear interpolation.",
+          "Strong seasonal contamination correlation detected in historical logs."
+        ],
+        known_issues="Sensor anomaly noise in sector B telemetry logs requiring time-series clipping.",
+        expert_guidance="Dr. Meera Rao recommended time-based validation split over random cross-validation.",
+        authorized_artifacts=[
+          {"title": "Dataset Validation Report", "ref": "SHA: a91f82c4", "verified": True},
+          {"title": "Literature Scout AI Summaries", "ref": "34 paper summaries", "verified": True},
+          {"title": "LSTM Neural Net Baseline Model", "ref": "Git commit #b3e1cc78", "verified": True}
+        ],
+        ai_summary="AI Handover Assistant gathered 4 authorized evidence artifacts, 3 completed milestones, and 3 pending tasks for seamless research continuity.",
+        next_recommended_action="Begin temporal feature engineering and inspect Dataset Validation Report #a91f82c4."
+    )
+    db.add(ho1)
+
+    # 16. Notifications
+    n1 = Notification(
+        user_id=user_bhumikaa.id,
+        title="New Research Problem Posted",
+        message="AquaNova Research Labs posted 'AI-Assisted Urban Water Quality Prediction' (92% skill match).",
+        category="Research Problem",
+        related_project_id="PW-1042",
+        is_read=True
+    )
+    n2 = Notification(
+        user_id=user_aarav.id,
+        title="Project Access Granted — AI Handover Ready",
+        message="You are approved as replacement researcher for PW-1042. AI Handover Assistant onboarding brief is ready.",
+        category="AI Handover",
+        related_project_id="PW-1042",
+        is_read=False
+    )
+    db.add_all([n1, n2])
+
+    db.commit()
+    print("Database seeded successfully with workflow data!")

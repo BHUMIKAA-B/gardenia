@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Home, Search, FolderOpen, GitGraph, Bot,
-  Award, LayoutDashboard, Scale, Coins,
-  Bell, User, Presentation, LogOut
+  Home, Search, FolderOpen, MessageSquare, Calendar, GitGraph, Bot,
+  Award, Cpu, Bell, LayoutDashboard, Scale, Coins, UserCheck,
+  Presentation, LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,25 +10,30 @@ const NAV = [
   {
     section: 'Workspace',
     items: [
-      { id: 'home',      label: 'Home',            icon: Home           },
-      { id: 'discover',  label: 'Research',        icon: Search         },
-      { id: 'workspace', label: 'My Project',      icon: FolderOpen     },
-      { id: 'proof',     label: 'Proof Graph',     icon: GitGraph       },
+      { id: 'home',         label: 'Home',            icon: Home           },
+      { id: 'discover',     label: 'Research',        icon: Search         },
+      { id: 'workspace',    label: 'My Project',      icon: FolderOpen     },
+      { id: 'messages',     label: 'Messages',        icon: MessageSquare  },
+      { id: 'updates',      label: 'Work Updates',    icon: Calendar       },
+      { id: 'proof',        label: 'Proof Graph',     icon: GitGraph       },
     ],
   },
   {
     section: 'Intelligence',
     items: [
-      { id: 'ai',       label: 'AI Control',       icon: Bot            },
-      { id: 'passport', label: 'Research Passport',icon: Award          },
+      { id: 'ai',          label: 'AI Control',       icon: Bot            },
+      { id: 'passport',    label: 'Research Passport',icon: Award          },
+      { id: 'handover',    label: 'AI Handover',      icon: Cpu            },
     ],
   },
   {
     section: 'Governance',
     items: [
-      { id: 'sponsor',  label: 'Sponsor View',     icon: LayoutDashboard},
-      { id: 'dispute',  label: 'Disputes',         icon: Scale          },
-      { id: 'reward',   label: 'Rewards',          icon: Coins          },
+      { id: 'notifications',label: 'Notifications',  icon: Bell           },
+      { id: 'sponsor',      label: 'Sponsor View',    icon: LayoutDashboard},
+      { id: 'replacement',  label: 'Replacement',    icon: UserCheck      },
+      { id: 'dispute',      label: 'Disputes',        icon: Scale          },
+      { id: 'reward',       label: 'Rewards',         icon: Coins          },
     ],
   },
 ];

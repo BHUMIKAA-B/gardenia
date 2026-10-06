@@ -20,6 +20,14 @@ import WhyPanelModal from './components/WhyPanelModal';
 import ProofNodeModal from './components/ProofNodeModal';
 import DeniedAccessModal from './components/DeniedAccessModal';
 
+// NEW FEATURE VIEWS
+import MessagesView from './components/MessagesView';
+import NotificationCenter from './components/NotificationCenter';
+import WorkUpdatesView from './components/WorkUpdatesView';
+import ReplacementView from './components/ReplacementView';
+import AIHandoverView from './components/AIHandoverView';
+import { Bell } from 'lucide-react';
+
 /* ── Workspace page: tabs for Team / Charter / Contributions ── */
 const PROJECT_TABS = [
   { id: 'overview',       label: 'Overview'       },
@@ -211,6 +219,9 @@ function HomePage({ onNavigate }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {[
             { label: 'View my project', sub: 'AI-Assisted Urban Water Quality Prediction · PW-1042', tab: 'workspace' },
+            { label: 'Private Research Chat', sub: 'Scoped student ↔ mentor communications', tab: 'messages' },
+            { label: 'Work Updates', sub: 'Daily & weekly progress update logs', tab: 'updates' },
+            { label: 'AI Handover Assistant', sub: 'Project continuity & onboarding brief', tab: 'handover' },
             { label: 'Proof Graph', sub: 'Inspect the contribution attribution network', tab: 'proof' },
             { label: 'AI Control', sub: 'Monitor Literature Scout agent scope', tab: 'ai' },
             { label: 'Research Passport', sub: 'Your verified research identity', tab: 'passport' },
@@ -284,16 +295,21 @@ function MainAppContent() {
 
   const renderPage = () => {
     switch (activeTab) {
-      case 'home':      return <HomePage onNavigate={handleTab} />;
-      case 'discover':  return <ResearchDiscovery onSelectProject={() => handleTab('workspace')} onOpenWhyMatch={p => setWhyProject(p)} />;
-      case 'workspace': return <WorkspacePage onOpenProofModal={n => setProofNode(n)} />;
-      case 'proof':     return <ProofGraph onOpenProofModal={n => setProofNode(n)} />;
-      case 'ai':        return <AIControlRoom onTriggerDeniedAccess={d => setDeniedData(d)} />;
-      case 'passport':  return <ResearchPassport onOpenProofModal={a => setProofNode(a)} />;
-      case 'sponsor':   return <SponsorDashboard />;
-      case 'dispute':   return <DisputeGovernance />;
-      case 'reward':    return <RewardModel />;
-      default:          return null;
+      case 'home':          return <HomePage onNavigate={handleTab} />;
+      case 'discover':      return <ResearchDiscovery onSelectProject={() => handleTab('workspace')} onOpenWhyMatch={p => setWhyProject(p)} />;
+      case 'workspace':     return <WorkspacePage onOpenProofModal={n => setProofNode(n)} />;
+      case 'messages':      return <MessagesView />;
+      case 'updates':        return <WorkUpdatesView onRequestReplacement={() => handleTab('replacement')} />;
+      case 'notifications':  return <NotificationCenter onNavigateTab={handleTab} />;
+      case 'replacement':    return <ReplacementView onStartHandover={() => handleTab('handover')} />;
+      case 'handover':       return <AIHandoverView onProceedToWorkspace={() => handleTab('workspace')} onOpenProofModal={n => setProofNode(n)} />;
+      case 'proof':         return <ProofGraph onOpenProofModal={n => setProofNode(n)} />;
+      case 'ai':            return <AIControlRoom onTriggerDeniedAccess={d => setDeniedData(d)} />;
+      case 'passport':      return <ResearchPassport onOpenProofModal={a => setProofNode(a)} />;
+      case 'sponsor':       return <SponsorDashboard />;
+      case 'dispute':       return <DisputeGovernance />;
+      case 'reward':        return <RewardModel />;
+      default:              return null;
     }
   };
 
@@ -308,9 +324,19 @@ function MainAppContent() {
         <header className="app-header">
           <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
             <span className="w-2 h-2 rounded-full bg-indigo-500" />
-            <span style={{ color: 'var(--text-secondary)' }}>ProofWeave Network</span>
+            <span style={{ color: 'var(--text-secondary)' }}>ProofWeave Trust Network</span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleTab('notifications')}
+              className="relative p-1.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white transition-all"
+              title="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white font-mono text-[9px] font-bold rounded-full flex items-center justify-center">
+                3
+              </span>
+            </button>
             <ThemeToggle />
           </div>
         </header>

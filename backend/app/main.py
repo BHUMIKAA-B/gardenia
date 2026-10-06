@@ -7,7 +7,8 @@ from .seed import seed_database
 from .routes import (
     auth, research, matching, projects, contributions,
     proof_graph, ledger, ai_governance, passport, rewards,
-    disputes, admin
+    disputes, admin, messages, notifications, work_updates,
+    replacements, handover
 )
 
 @asynccontextmanager
@@ -53,6 +54,11 @@ app.include_router(passport.router, prefix=settings.API_V1_STR)
 app.include_router(rewards.router, prefix=settings.API_V1_STR)
 app.include_router(disputes.router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=settings.API_V1_STR)
+app.include_router(messages.router, prefix=settings.API_V1_STR)
+app.include_router(notifications.router, prefix=settings.API_V1_STR)
+app.include_router(work_updates.router, prefix=settings.API_V1_STR)
+app.include_router(replacements.router, prefix=settings.API_V1_STR)
+app.include_router(handover.router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():

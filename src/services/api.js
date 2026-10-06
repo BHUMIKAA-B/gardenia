@@ -280,5 +280,175 @@ export const api = {
     } catch (e) {
       return null;
     }
+  },
+
+  // NEW FEATURES — 1. Messages / Private Research Chat
+  getConversations: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  getConversationMessages: async (conversationId) => {
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  sendMessage: async (conversationId, messageData) => {
+    try {
+      const res = await fetch(`${API_BASE}/messages/conversations/${conversationId}/messages`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(messageData)
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // NEW FEATURES — 2. Notifications Center
+  getNotifications: async (category = "All") => {
+    try {
+      const url = category && category !== "All" ? `${API_BASE}/notifications?category=${category}` : `${API_BASE}/notifications`;
+      const res = await fetch(url, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  markNotificationRead: async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: getHeaders()
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  markAllNotificationsRead: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/notifications/read-all`, {
+        method: "POST",
+        headers: getHeaders()
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // NEW FEATURES — 3. Hierarchical Work Updates
+  getWorkUpdates: async (projectId = "PW-1042", updateType = "All") => {
+    try {
+      const url = `${API_BASE}/work-updates?project_id=${projectId}&update_type=${updateType}`;
+      const res = await fetch(url, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  createWorkUpdate: async (updateData) => {
+    try {
+      const res = await fetch(`${API_BASE}/work-updates`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(updateData)
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  reviewWorkUpdate: async (id, reviewData) => {
+    try {
+      const res = await fetch(`${API_BASE}/work-updates/${id}/review`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(reviewData)
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // NEW FEATURES — 4. Private Replacement Workflow
+  getReplacements: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/replacements`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  createReplacementRequest: async (repData) => {
+    try {
+      const res = await fetch(`${API_BASE}/replacements`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(repData)
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  acceptReplacement: async (replacementId) => {
+    try {
+      const res = await fetch(`${API_BASE}/replacements/${replacementId}/accept`, {
+        method: "POST",
+        headers: getHeaders()
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  approveReplacement: async (replacementId, candidateId) => {
+    try {
+      const res = await fetch(`${API_BASE}/replacements/${replacementId}/approve?candidate_id=${candidateId}`, {
+        method: "POST",
+        headers: getHeaders()
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // NEW FEATURES — 5. AI-Assisted Project Handover
+  getHandover: async (projectId = "PW-1042") => {
+    try {
+      const res = await fetch(`${API_BASE}/handover/${projectId}`, { headers: getHeaders() });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  },
+  generateHandover: async (projectId = "PW-1042", replacementId = "REP-101") => {
+    try {
+      const res = await fetch(`${API_BASE}/handover/generate`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ project_id: projectId, replacement_id: replacementId })
+      });
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
   }
 };

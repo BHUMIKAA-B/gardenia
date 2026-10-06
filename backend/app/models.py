@@ -309,5 +309,128 @@ class Notification(Base):
     title = Column(String, nullable=False)
     message = Column(Text, nullable=False)
     notification_type = Column(String, default="info")
+    category = Column(String, default="General") # Research Problem, Project Update, Work Update, Replacement, AI Handover, System
+    related_project_id = Column(String, nullable=True)
+    action_link = Column(String, nullable=True)
     is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(String, primary_key=True, index=True)  # e.g., "CONV-101"
+    project_id = Column(String, ForeignKey("projects.id"), index=True, nullable=True)
+    project_title = Column(String, nullable=True)
+    title = Column(String, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    participants = relationship("ConversationParticipant", back_populates="conversation")
+    messages = relationship("Message", back_populates="conversation")
+
+
+class ConversationParticipant(Base):
+    __tablename__ = "conversation_participants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(String, ForeignKey("conversations.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    user_name = Column(String, nullable=False)
+    user_role = Column(String, nullable=False)
+
+    conversation = relationship("Conversation", back_populates="participants")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(String, primary_key=True, index=True)  # e.g., "MSG-1001"
+    conversation_id = Column(String, ForeignKey("conversations.id"), index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), index=True)
+    sender_name = Column(String, nullable=False)
+    sender_role = Column(String, nullable=False)
+    text = Column(Text, nullable=False)
+    attachment_ref = Column(String, nullable=True)
+    evidence_id = Column(String, nullable=True)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    conversation = relationship("Conversation", back_populates="messages")
+
+
+class WorkUpdate(Base):
+    __tablename__ = "work_updates"
+
+    id = Column(String, primary_key=True, index=True)  # e.g., "UPD-101"
+    project_id = Column(String, ForeignKey("projects.id"), index=True)
+    author_id = Column(Integer, ForeignKey("users.id"), index=True)
+    author_name = Column(String, nullable=False)
+    author_role = Column(String, nullable=False)
+    update_type = Column(String, nullable=False)  # Daily, Weekly, Final
+    date = Column(String, nullable=False)
+    summary = Column(Text, nullable=False)
+    work_completed = Column(Text, nullable=False)
+    challenges = Column(Text, nullable=True)
+    next_steps = Column(Text, nullable=True)
+    evidence_ref = Column(String, nullable=True)
+    effort_hours = Column(Float, default=0.0)
+    milestone_progress = Column(Integer, default=0)
+    status = Column(String, default="Submitted")  # Submitted, Reviewed, Approved, Flagged
+    reviewer_name = Column(String, nullable=True)
+    reviewer_comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ReplacementRequest(Base):
+    __tablename__ = "replacement_requests"
+
+    id = Column(String, primary_key=True, index=True)  # e.g., "REP-101"
+    project_id = Column(String, ForeignKey("projects.id"), index=True)
+    project_title = Column(String, nullable=False)
+    requester_id = Column(Integer, ForeignKey("users.id"), index=True)
+    requester_name = Column(String, nullable=False)
+    requester_role = Column(String, nullable=False)
+    reason = Column(Text, nullable=False)
+    required_skills = Column(JSON, default=list)
+    progress_pct = Column(Integer, default=0)
+    last_milestone = Column(String, nullable=False)
+    status = Column(String, default="Requested")  # Requested, Candidate Invited, Approved, Completed
+    approved_candidate_id = Column(Integer, nullable=True)
+    approved_candidate_name = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    candidates = relationship("ReplacementCandidate", back_populates="request")
+
+
+class ReplacementCandidate(Base):
+    __tablename__ = "replacement_candidates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    replacement_id = Column(String, ForeignKey("replacement_requests.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    user_name = Column(String, nullable=False)
+    match_score = Column(Float, default=90.0)
+    status = Column(String, default="Invited")  # Invited, Accepted, Declined, Approved
+    invited_at = Column(DateTime, default=datetime.utcnow)
+
+    request = relationship("ReplacementRequest", back_populates="candidates")
+
+
+class HandoverSession(Base):
+    __tablename__ = "handover_sessions"
+
+    id = Column(String, primary_key=True, index=True)  # e.g., "HO-101"
+    project_id = Column(String, ForeignKey("projects.id"), index=True)
+    replacement_id = Column(String, ForeignKey("replacement_requests.id"), index=True)
+    requester_name = Column(String, nullable=False)
+    replacement_name = Column(String, nullable=False)
+    status = Column(String, default="Completed")  # In Progress, Completed
+    completed_tasks = Column(JSON, default=list)
+    pending_tasks = Column(JSON, default=list)
+    key_findings = Column(JSON, default=list)
+    known_issues = Column(Text, nullable=True)
+    expert_guidance = Column(Text, nullable=True)
+    authorized_artifacts = Column(JSON, default=list)
+    ai_summary = Column(Text, nullable=False)
+    next_recommended_action = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
