@@ -8,7 +8,7 @@ export default function MessagesView({ selectedConversationId, onSelectConversat
   const { user } = useAuth();
   const { addToast } = useToast();
   const [conversations, setConversations] = useState([]);
-  const [selectedConvId, setSelectedConvId] = useState(selectedConversationId || "CONV-101");
+  const [selectedConvId, setSelectedConvId] = useState(selectedConversationId || null);
   const [messages, setMessages] = useState([]);
   const [newMessageText, setNewMessageText] = useState("");
   const [attachment, setAttachment] = useState("");
@@ -82,10 +82,10 @@ export default function MessagesView({ selectedConversationId, onSelectConversat
   }, [messages.length]);
 
   const activeConv = conversations.find(c => c.id === selectedConvId) || conversations[0] || {
-    id: "CONV-101",
-    title: "PW-1042: Student ↔ Mentor Discussion",
-    project_title: "AI-Assisted Urban Water Quality Prediction",
-    project_id: "PW-1042",
+    id: "NEW",
+    title: "No Conversation Selected",
+    project_title: "Please select a conversation",
+    project_id: "",
     participants: []
   };
 

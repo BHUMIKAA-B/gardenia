@@ -38,6 +38,99 @@ def get_unread_count(db: Session = Depends(get_db), current_user: User = Depends
 
 @router.get("/conversations")
 def get_conversations(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # --- AUTO-ESTABLISH CONVERSATIONS ---
+    # Fetch user's active projects
+    my_projects = db.query(ProjectMember).filter(
+        ProjectMember.user_id == current_user.id,
+        ProjectMember.status == "Active"
+    ).all()
+
+    for pm in my_projects:
+        project_id = pm.project_id
+        my_role = pm.role_in_project.lower()
+
+        # Find other members in this project
+        other_members = db.query(ProjectMember).filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id != current_user.id,
+            ProjectMember.status == "Active"
+        ).all()
+
+        for om in other_members:
+            other_role = om.role_in_project.lower()
+            other_user_id = om.user_id
+
+            # Determine if this pair should have a conversation
+            should_have_conv = False
+            title = ""
+            if (my_role == "student" and other_role == "mentor") or (my_role == "mentor" and other_role == "student"):
+                should_have_conv = True
+                title = f"{project_id}: Student ↔ Mentor Discussion"
+            elif (my_role == "mentor" and other_role == "expert") or (my_role == "expert" and other_role == "mentor"):
+                should_have_conv = True
+                title = f"{project_id}: Mentor ↔ Expert Sync"
+
+            if should_have_conv:
+                # Check if a conversation between these two already exists
+                # We need a conversation where BOTH are participants and NO ONE ELSE is.
+                # Find all conversations current_user is in
+                my_convs = db.query(ConversationParticipant.conversation_id).filter(
+                    ConversationParticipant.user_id == current_user.id
+                ).subquery()
+
+                # Find which of these the other_user is in
+                shared_convs = db.query(ConversationParticipant.conversation_id).filter(
+                    ConversationParticipant.conversation_id.in_(my_convs),
+                    ConversationParticipant.user_id == other_user_id
+                ).subquery()
+
+                # Filter down to ones with EXACTLY 2 participants
+                # and matching project_id
+                conv = db.query(Conversation).filter(
+                    Conversation.id.in_(shared_convs),
+                    Conversation.project_id == project_id
+                ).first()
+
+                if conv:
+                    # Check participant count
+                    p_count = db.query(ConversationParticipant).filter(ConversationParticipant.conversation_id == conv.id).count()
+                    if p_count != 2:
+                        conv = None # Not a strict 1-on-1
+
+                if not conv:
+                    # Create the conversation
+                    new_id = f"CONV-{project_id}-{current_user.id}-{other_user_id}-{int(datetime.utcnow().timestamp())}"
+                    proj = db.query(Project).filter(Project.id == project_id).first()
+                    
+                    new_conv = Conversation(
+                        id=new_id,
+                        project_id=project_id,
+                        project_title=proj.title if proj else "Research Project",
+                        title=title,
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
+                    )
+                    db.add(new_conv)
+                    
+                    # Add me
+                    cp1 = ConversationParticipant(
+                        conversation_id=new_id,
+                        user_id=current_user.id,
+                        user_name=current_user.full_name,
+                        user_role=current_user.role.capitalize() if current_user.role else "Researcher"
+                    )
+                    # Add them
+                    other_u = db.query(User).filter(User.id == other_user_id).first()
+                    cp2 = ConversationParticipant(
+                        conversation_id=new_id,
+                        user_id=other_user_id,
+                        user_name=other_u.full_name if other_u else "Unknown",
+                        user_role=other_u.role.capitalize() if (other_u and other_u.role) else "Researcher"
+                    )
+                    db.add_all([cp1, cp2])
+                    db.commit()
+    # --- END AUTO-ESTABLISH ---
+
     # Find conversations where current user is a participant
     participant_entry = db.query(ConversationParticipant).filter(ConversationParticipant.user_id == current_user.id).all()
     conv_ids = [p.conversation_id for p in participant_entry]

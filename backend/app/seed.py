@@ -46,11 +46,11 @@ def seed_database(db: Session):
         email="aarav@proofweave.io",
         hashed_password=hash_password("aarav123"),
         full_name="Aarav Patel",
-        role="student",
+        role="mentor",
         avatar="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-        bio="Student Researcher focused on Neural Networks and Time-Series forecast architectures.",
+        bio="Mentor focused on Neural Networks and Time-Series forecast architectures.",
         institution="GCU Tech Institute",
-        skills=["Python", "PyTorch", "LSTM", "Time-Series Modeling", "Machine Learning"],
+        skills=["Python", "PyTorch", "LSTM", "Time-Series Modeling", "Machine Learning", "Mentoring"],
         research_interests=["Neural Time-Series Forecasting", "AI Literature Extraction"],
         is_verified=True
     )
@@ -162,9 +162,9 @@ def seed_database(db: Session):
     db.add(m1)
 
     # 4. Project Members
-    pm1 = ProjectMember(project_id="PW-1042", user_id=user_bhumikaa.id, role_in_project="Lead Data Engineer", status="Active")
-    pm2 = ProjectMember(project_id="PW-1042", user_id=user_aarav.id, role_in_project="ML Developer", status="Active")
-    pm3 = ProjectMember(project_id="PW-1042", user_id=user_meera.id, role_in_project="Domain Mentor", status="Active")
+    pm1 = ProjectMember(project_id="PW-1042", user_id=user_bhumikaa.id, role_in_project="Student", status="Active")
+    pm2 = ProjectMember(project_id="PW-1042", user_id=user_aarav.id, role_in_project="Mentor", status="Active")
+    pm3 = ProjectMember(project_id="PW-1042", user_id=user_meera.id, role_in_project="Expert", status="Active")
     db.add_all([pm1, pm2, pm3])
 
     # 5. Project Charter
@@ -182,7 +182,7 @@ def seed_database(db: Session):
         ai_usage_rules="AI agents must have named human owners. AI cannot hold independent credit.",
         dispute_rules="Disputes handled via Expert Review Board.",
         locked=True,
-        accepted_by=["Student: Bhumikaa B", "Student: Aarav Patel", "Mentor: Dr. Meera Rao", "Sponsor: AquaNova Research Labs"]
+        accepted_by=["Student: Bhumikaa B", "Mentor: Aarav Patel", "Expert: Dr. Meera Rao", "Sponsor: AquaNova Research Labs"]
     )
     db.add(charter)
 
@@ -212,9 +212,9 @@ def seed_database(db: Session):
         status="In Progress",
         released=False,
         distribution=[
-            {"name": "Aarav Patel", "percent": 22, "role": "Lead ML Developer"},
-            {"name": "Bhumikaa B", "percent": 15, "role": "Data Pipeline"},
-            {"name": "Dr. Meera Rao", "percent": 8, "role": "Domain Reviewer"}
+            {"name": "Aarav Patel", "percent": 22, "role": "Mentor"},
+            {"name": "Bhumikaa B", "percent": 15, "role": "Student"},
+            {"name": "Dr. Meera Rao", "percent": 8, "role": "Expert"}
         ]
     )
 
@@ -281,7 +281,7 @@ def seed_database(db: Session):
         milestone_id="PW-1042-M1",
         contributor_id=user_meera.id,
         contributor_name="Dr. Meera Rao",
-        contributor_role="Domain Mentor",
+        contributor_role="Expert",
         is_ai_assisted=False,
         effort_hours=8.0,
         status="Validated",
@@ -424,19 +424,45 @@ def seed_database(db: Session):
     db.add(disp)
 
     # 12. Chat Conversations & Messages
+    # Conversation 1: Student ↔ Mentor (Bhumikaa B & Aarav Patel)
     conv1 = Conversation(
         id="CONV-101",
         project_id="PW-1042",
         project_title="AI-Assisted Urban Water Quality Prediction",
         title="PW-1042: Student ↔ Mentor Discussion"
     )
-    db.add(conv1)
+    # Conversation 2: Mentor ↔ Expert (Aarav Patel & Dr. Meera Rao)
+    conv2 = Conversation(
+        id="CONV-102",
+        project_id="PW-1042",
+        project_title="AI-Assisted Urban Water Quality Prediction",
+        title="PW-1042: Mentor ↔ Expert Sync"
+    )
+    # Conversation 3: Expert ↔ Sponsor (Dr. Meera Rao & AquaNova Director)
+    conv3 = Conversation(
+        id="CONV-103",
+        project_id="PW-1042",
+        project_title="AI-Assisted Urban Water Quality Prediction",
+        title="PW-1042: Expert ↔ Sponsor Sync"
+    )
+    db.add_all([conv1, conv2, conv3])
     db.commit()
 
+    # Participants for CONV-101 (Student ↔ Mentor)
     cp1 = ConversationParticipant(conversation_id="CONV-101", user_id=user_bhumikaa.id, user_name="Bhumikaa B", user_role="Student")
-    cp2 = ConversationParticipant(conversation_id="CONV-101", user_id=user_meera.id, user_name="Dr. Meera Rao", user_role="Mentor")
-    db.add_all([cp1, cp2])
+    cp2 = ConversationParticipant(conversation_id="CONV-101", user_id=user_aarav.id, user_name="Aarav Patel", user_role="Mentor")
+    
+    # Participants for CONV-102 (Mentor ↔ Expert)
+    cp3 = ConversationParticipant(conversation_id="CONV-102", user_id=user_aarav.id, user_name="Aarav Patel", user_role="Mentor")
+    cp4 = ConversationParticipant(conversation_id="CONV-102", user_id=user_meera.id, user_name="Dr. Meera Rao", user_role="Expert")
 
+    # Participants for CONV-103 (Expert ↔ Sponsor)
+    cp5 = ConversationParticipant(conversation_id="CONV-103", user_id=user_meera.id, user_name="Dr. Meera Rao", user_role="Expert")
+    cp6 = ConversationParticipant(conversation_id="CONV-103", user_id=user_sponsor.id, user_name="AquaNova Research Director", user_role="Sponsor")
+
+    db.add_all([cp1, cp2, cp3, cp4, cp5, cp6])
+
+    # Messages for CONV-101
     msg1 = Message(
         id="MSG-101",
         conversation_id="CONV-101",
@@ -450,13 +476,47 @@ def seed_database(db: Session):
     msg2 = Message(
         id="MSG-102",
         conversation_id="CONV-101",
-        sender_id=user_meera.id,
-        sender_name="Dr. Meera Rao",
+        sender_id=user_aarav.id,
+        sender_name="Aarav Patel",
         sender_role="Mentor",
         text="Great work Bhumikaa! Please review the 7% timestamp inconsistencies in sector B before feature engineering.",
         is_read=True
     )
-    db.add_all([msg1, msg2])
+
+    # Messages for CONV-102 (Mentor ↔ Expert)
+    msg3 = Message(
+        id="MSG-201",
+        conversation_id="CONV-102",
+        sender_id=user_aarav.id,
+        sender_name="Aarav Patel",
+        sender_role="Mentor",
+        text="Dr. Meera, the student has completed the dataset validation. Could you review the evidence?",
+        attachment_ref="Dataset Validation Report #EV-1024",
+        is_read=True
+    )
+    msg4 = Message(
+        id="MSG-202",
+        conversation_id="CONV-102",
+        sender_id=user_meera.id,
+        sender_name="Dr. Meera Rao",
+        sender_role="Expert",
+        text="Will review the evidence.",
+        is_read=True
+    )
+
+    # Messages for CONV-103 (Expert ↔ Sponsor)
+    msg5 = Message(
+        id="MSG-301",
+        conversation_id="CONV-103",
+        sender_id=user_meera.id,
+        sender_name="Dr. Meera Rao",
+        sender_role="Expert",
+        text="Director, Milestone 1 telemetry dataset validation is complete.",
+        attachment_ref="Milestone 1 Validation Audit #LOG-1001",
+        is_read=True
+    )
+
+    db.add_all([msg1, msg2, msg3, msg4, msg5])
 
     # 13. Work Updates
     up1 = WorkUpdate(
