@@ -76,13 +76,13 @@ def get_conversations(db: Session = Depends(get_db), current_user: User = Depend
                 # Find all conversations current_user is in
                 my_convs = db.query(ConversationParticipant.conversation_id).filter(
                     ConversationParticipant.user_id == current_user.id
-                ).subquery()
+                )
 
                 # Find which of these the other_user is in
                 shared_convs = db.query(ConversationParticipant.conversation_id).filter(
                     ConversationParticipant.conversation_id.in_(my_convs),
                     ConversationParticipant.user_id == other_user_id
-                ).subquery()
+                )
 
                 # Filter down to ones with EXACTLY 2 participants
                 # and matching project_id
@@ -99,7 +99,7 @@ def get_conversations(db: Session = Depends(get_db), current_user: User = Depend
 
                 if not conv:
                     # Create the conversation
-                    new_id = f"CONV-{project_id}-{current_user.id}-{other_user_id}-{int(datetime.utcnow().timestamp())}"
+                    new_id = f"CONV-{project_id}-{current_user.id}-{other_user_id}"
                     proj = db.query(Project).filter(Project.id == project_id).first()
                     
                     new_conv = Conversation(
